@@ -3,9 +3,7 @@
 let _count = 0;
 
 Office.onReady(() => {
-  document.getElementById("sideload-msg").style.display = "none";
-  document.getElementById("app-body").style.display = "flex";
-  document.getElementById("run-diff").onclick = "runDiff";
+  document.getElementById("run-diff").onclick = runDiff;
 
   updateCount(); // Update count on first open.
   Office.addin.onVisibilityModeChanged(function (args) {
@@ -17,7 +15,7 @@ Office.onReady(() => {
 
 function updateCount() {
   _count++;
-  document.getElementById("run").textContent = "Task pane opened " + _count + " times.";
+  console.log(`Count: ${_count}`);
 }
 
 function runDiff() {
