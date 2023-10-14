@@ -103,7 +103,7 @@ function addDummyData() {
       [6, 'six'],
       [7, 'seven'],
       [7.5, 'seven and a half'],
-      [8, 'eight'],
+      [8, 'eights'],
       [9, 'nine'],
       [10, 'ten'],
     ];
@@ -116,19 +116,45 @@ function addDummyData() {
 
 /* ---- DIFF FUNCTIONS ---- */
 
+const DiffType = {
+  UNCHANGED: 0,
+  ADDITION: 1,
+  REMOVAL: 2,
+  MODIFICATION: 3,
+}
+
 class Diff {
   constructor(type, before = null, after = null) {
     this.type = type;
     this.before = before;
     this.after = after;
-    this.intraDiff = null;
+    this.subDiff = null;
   }
 
-
+  toString() {
+    if (this.type == DiffType.ADDITION) {
+      return `+  ${this.after}`;
+    }
+    else if (this.type == DiffType.REMOVAL) {
+      return `- ${this.before}`;
+    }
+    else {
+      return `  ${this.before}`;
+    }
+  }
 }
 
 const compareArrays = (a, b) => {
   return JSON.stringify(a) === JSON.stringify(b);
+}
+
+const equalEntries = (a, b) => {
+  if (Array.isArray(a) && Array.isArray(b)) {
+    return compareArrays(a, b);
+  }
+  else {
+    return a == b;
+  }
 }
 
 /**
@@ -140,16 +166,14 @@ const compareArrays = (a, b) => {
  * @returns {list}  2D matrix of LCS lengths. 
  */
 function computeLCSLength(list_one, list_two) {
+  /* Computes an LCS table for lists l1 and l2. */
+  let n = list_one.length;
+  let m = list_two.length;
+
+  // Store results in an (n+1) * (m+1) matrix. +1 for empty strings.
+  let lcs = Array(n + 1).fill().map(() => Array(m + 1).fill(0))
+
   try {
-    /* Computes an LCS table for lists l1 and l2. */
-    n = list_one.length;
-    m = list_two.length;
-
-    // Store results in an (n+1) * (m+1) matrix. +1 for empty strings.
-    let lcs = Array(n + 1).fill().map(() => Array(m + 1).fill(0))
-
-    console.log(lcs);
-
     for (let i = 0; i < n + 1; i++) {
       for (let j = 0; j < m + 1; j++) {
         if (i === 0 || j === 0) {
@@ -166,6 +190,51 @@ function computeLCSLength(list_one, list_two) {
   } catch (error) {
     console.log(error);
   }
+  return lcs;
+}
+
+function diff1D(list_one, list_two) {
+  let lcs = computeLCSLength(list_one, list_two);
+  let diffs = []
+
+  let i = list_one.length;
+  let j = list_two.length;
+
+  console.log(`LCS: ${lcs}`);
+
+  // Iterate until reaching end of both lists.
+  while (i != 0 || j != 0) {
+    // If reached end of one of the lists, append the remaining additions and removals.
+    if (i === 0) {
+      diffs.push(new Diff(DiffType.ADDITION, before = null, after = list_two[j - 1]));
+      j--;
+    }
+    else if (j === 0) {
+      diffs.push(new Diff(DiffType.REMOVAL, before = list_one[i - 1], after = null));
+      i--;
+    }
+
+    // Otherwise, parts of both lists remain. If current entries are equal, they belong to the lcs.
+    else if (equalEntries(list_one[i - 1], list_two[j - 1])) {
+      diffs.push(new Diff(DiffType.UNCHANGED, before=list_one[i - 1], after=list_one[i - 1]));
+      i--;
+      j--;
+    }
+
+    // In any other case, move in the direction of the lcs.
+    else if (lcs[i - 1][j] <= lcs[i][j - 1]) {
+      diffs.push(new Diff(DiffType.ADDITION, before = null, after = list_two[j - 1]));
+      j--;
+    }
+    else {
+      diffs.push(new Diff(DiffType.REMOVAL, before = list_one[i - 1], after = null));
+      i--;
+    }
+  }
+
+  diffs = diffs.reverse();
+
+  return diffs;
 }
 
 function runDiff() {
@@ -189,12 +258,16 @@ function runDiff() {
 
       let list1 = range1.values;
       let list2 = range2.values;
-  
-      // Compute the LCS for the read data.
-      let lcs = computeLCSLength(list1, list2);
 
+      console.log(`LIST 1: ${list1}`)
+      console.log(`LIST 2: ${list2}`)
+  
       // Perform the diff algorithm to get a list of Diffs.
-      
+      let diff = diff1D(list1, list2);
+      console.log('---- DIFF ----');
+      for (let i = 0; i < diff.length; i++) {
+        console.log(diff[i].toString());
+      }
 
       // Clean the diff list.
 
