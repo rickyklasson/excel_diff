@@ -123,6 +123,81 @@ const DiffType = {
   MODIFICATION: 3,
 }
 
+class DiffHandler {
+  constructor(diffs) {
+    this.diffs = diffs;
+  }
+
+  toString() {
+    console.log('---- DIFF ----');
+    for (let i = 0; i < this.diffs.length; i++) {
+      console.log(this.diffs[i].toString());
+    }
+  }
+
+  getNrRows() {
+    return this.diffs.length;
+  }
+
+  getNrCols() {
+    let maxCols = 0;
+    for (let i = 0; i < this.getNrRows(); i++) {
+      let diff = this.diffs[i];
+      if (diff.before != null && diff.before.length > maxCols) {
+        maxCols = diff.before.length;
+      }
+      if (diff.after != null && diff.after.length > maxCols) {
+        maxCols = diff.after.length;
+      }
+    }
+    return maxCols;
+  }
+
+  getPaddedDiffData() {
+    let diffData = [];
+    let nrCols = this.getNrCols();
+
+    for (let diffIdx = 0; diffIdx < this.getNrRows(); diffIdx++) {
+      let rowData = [];
+      let diff = this.diffs[diffIdx];
+
+      for (let colIdx = 0; colIdx < nrCols; colIdx++) {
+        let data = '';
+        if (diff.before != null && colIdx < diff.before.length) {
+          data = diff.before[colIdx];
+        }
+        else if (diff.after != null && colIdx < diff.after.length) {
+          data = diff.after[colIdx];
+        }
+        rowData.push(data);
+      }
+      diffData.push(rowData);
+    }
+    return diffData;
+  }
+
+  toSheet(sheetName) {
+    Excel.run(async (context) => {
+      try {
+        let resultSheet = context.workbook.worksheets.getItem(sheetName);
+        let nrRows = this.getNrRows();
+        let nrCols = this.getNrCols();
+  
+        let diffData = this.getPaddedDiffData();
+        let range = resultSheet.getRangeByIndexes(0, 0, nrRows, nrCols);
+
+        range.load("values");
+        await context.sync();
+        
+        range.values = diffData;
+        await context.sync();
+      } catch (error) {
+        console.log(error);
+      }
+    });
+  }
+}
+
 class Diff {
   constructor(type, before = null, after = null) {
     this.type = type;
@@ -263,17 +338,21 @@ function runDiff() {
       console.log(`LIST 2: ${list2}`)
   
       // Perform the diff algorithm to get a list of Diffs.
-      let diff = diff1D(list1, list2);
-      console.log('---- DIFF ----');
-      for (let i = 0; i < diff.length; i++) {
-        console.log(diff[i].toString());
-      }
+      let diffs = diff1D(list1, list2);
+      let diffHandler = new DiffHandler(diffs);
+      console.log(diffHandler.toString())
 
       // Clean the diff list.
 
       // Create corresponding formatting lists for the output.
 
-      // Display the output in excel sheet 2.
+      // Create sheet to display diff.
+      let resultSheetName = `Result_${Math.floor(Math.random() * 1000)}`;
+      context.workbook.worksheets.add(resultSheetName);
+      await context.sync();
+
+      // Display diff in result sheet.
+      diffHandler.toSheet(resultSheetName);
 
       // TODO: Write methods to view and hide the computed diff.
     } catch (error) {
