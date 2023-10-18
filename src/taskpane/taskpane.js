@@ -124,25 +124,26 @@ const DiffType = {
 }
 
 class DiffHandler {
+  #nrCols;
+  #nrRows;
+  #diffs;
   constructor(diffs) {
-    this.diffs = diffs;
+    this.#diffs = diffs;
+    this.#nrRows = this.#diffs.length;
+    this.#nrCols = this.calcNrCols();
   }
 
   toString() {
     console.log('---- DIFF ----');
-    for (let i = 0; i < this.diffs.length; i++) {
-      console.log(this.diffs[i].toString());
+    for (let i = 0; i < this.#diffs.length; i++) {
+      console.log(this.#diffs[i].toString());
     }
   }
 
-  getNrRows() {
-    return this.diffs.length;
-  }
-
-  getNrCols() {
+  calcNrCols() {
     let maxCols = 0;
-    for (let i = 0; i < this.getNrRows(); i++) {
-      let diff = this.diffs[i];
+    for (let i = 0; i < this.#nrRows; i++) {
+      let diff = this.#diffs[i];
       if (diff.before != null && diff.before.length > maxCols) {
         maxCols = diff.before.length;
       }
@@ -153,15 +154,22 @@ class DiffHandler {
     return maxCols;
   }
 
+  get nrRows() {
+    return this.#nrRows;
+  }
+
+  get nrCols() {
+    return this.#nrCols;
+  }
+
   getPaddedDiffData() {
     let diffData = [];
-    let nrCols = this.getNrCols();
 
-    for (let diffIdx = 0; diffIdx < this.getNrRows(); diffIdx++) {
+    for (let diffIdx = 0; diffIdx < this.#nrRows; diffIdx++) {
       let rowData = [];
-      let diff = this.diffs[diffIdx];
+      let diff = this.#diffs[diffIdx];
 
-      for (let colIdx = 0; colIdx < nrCols; colIdx++) {
+      for (let colIdx = 0; colIdx < this.#nrCols; colIdx++) {
         let data = '';
         if (diff.before != null && colIdx < diff.before.length) {
           data = diff.before[colIdx];
@@ -176,20 +184,53 @@ class DiffHandler {
     return diffData;
   }
 
+  getPaddedDiffFormat() {
+    let diffFormat = [];
+
+    for (let diffIdx = 0; diffIdx < this.#nrRows; diffIdx++) {
+      let rowFormat = [];
+      let diff = this.#diffs[diffIdx];
+
+      for (let colIdx = 0; colIdx < this.#nrCols; colIdx++) {
+        let color = 'white';
+
+        if (diff.type == DiffType.ADDITION) {
+          color = 'green'; 
+        }
+        else if (diff.type == DiffType.REMOVAL) {
+          color = 'red';
+        }
+        else if (diff.type == DiffType.MODIFICATION) {
+          color = 'blue';
+        }
+
+        rowFormat.push(color);
+      }
+      diffFormat.push(rowFormat);
+    }
+
+    return diffFormat;
+  }
+
   toSheet(sheetName) {
     Excel.run(async (context) => {
       try {
         let resultSheet = context.workbook.worksheets.getItem(sheetName);
-        let nrRows = this.getNrRows();
-        let nrCols = this.getNrCols();
   
         let diffData = this.getPaddedDiffData();
-        let range = resultSheet.getRangeByIndexes(0, 0, nrRows, nrCols);
-
-        range.load("values");
+        let diffFormat = this.getPaddedDiffFormat();
+        let range = resultSheet.getRangeByIndexes(0, 0, this.#nrRows, this.#nrCols);
+        range.load(["values"]);
         await context.sync();
-        
+
         range.values = diffData;
+
+        for (let row = 0; row < this.#nrRows; row++) {
+          for (let col = 0; col < this.#nrCols; col++) {
+            range.getCell(row, col).format.fill.color = diffFormat[row][col];
+          }
+        }
+
         await context.sync();
       } catch (error) {
         console.log(error);
