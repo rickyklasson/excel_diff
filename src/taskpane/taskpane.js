@@ -123,6 +123,21 @@ const DiffType = {
   MODIFICATION: 3,
 }
 
+const DiffFormat = {
+  UNCHANGED: {
+    fill: '#ffffff',
+  },
+  ADDITION: {
+    fill: "#c9f5c4",
+  },
+  REMOVAL: {
+    fill: '#edb4b6',
+  },
+  MODIFICATION: {
+    fill: '#a3aff0',
+  },
+}
+
 class DiffHandler {
   #nrCols;
   #nrRows;
@@ -131,6 +146,9 @@ class DiffHandler {
     this.#diffs = diffs;
     this.#nrRows = this.#diffs.length;
     this.#nrCols = this.calcNrCols();
+    this.diffData = [];
+    this.diffFormat = [];
+    this.diffFormat = [];
   }
 
   toString() {
@@ -162,8 +180,8 @@ class DiffHandler {
     return this.#nrCols;
   }
 
-  getPaddedDiffData() {
-    let diffData = [];
+  setDiffData() {
+    this.diffData = [];
 
     for (let diffIdx = 0; diffIdx < this.#nrRows; diffIdx++) {
       let rowData = [];
@@ -179,37 +197,33 @@ class DiffHandler {
         }
         rowData.push(data);
       }
-      diffData.push(rowData);
+      this.diffData.push(rowData);
     }
-    return diffData;
   }
 
-  getPaddedDiffFormat() {
-    let diffFormat = [];
+  setDiffFormat() {
+    this.diffFormat = [];
 
     for (let diffIdx = 0; diffIdx < this.#nrRows; diffIdx++) {
       let rowFormat = [];
       let diff = this.#diffs[diffIdx];
 
       for (let colIdx = 0; colIdx < this.#nrCols; colIdx++) {
-        let color = 'white';
-
+        let format = DiffFormat.UNCHANGED;
         if (diff.type == DiffType.ADDITION) {
-          color = 'green'; 
+          format = DiffFormat.ADDITION; 
         }
         else if (diff.type == DiffType.REMOVAL) {
-          color = 'red';
+          format = DiffFormat.REMOVAL;
         }
         else if (diff.type == DiffType.MODIFICATION) {
-          color = 'blue';
+          format = DiffFormat.MODIFICATION;
         }
 
-        rowFormat.push(color);
+        rowFormat.push(format);
       }
-      diffFormat.push(rowFormat);
+      this.diffFormat.push(rowFormat);
     }
-
-    return diffFormat;
   }
 
   toSheet(sheetName) {
@@ -217,17 +231,17 @@ class DiffHandler {
       try {
         let resultSheet = context.workbook.worksheets.getItem(sheetName);
   
-        let diffData = this.getPaddedDiffData();
-        let diffFormat = this.getPaddedDiffFormat();
         let range = resultSheet.getRangeByIndexes(0, 0, this.#nrRows, this.#nrCols);
         range.load(["values"]);
         await context.sync();
-
-        range.values = diffData;
-
+        
+        this.setDiffData();
+        range.values = this.diffData;
+        
+        this.setDiffFormat();
         for (let row = 0; row < this.#nrRows; row++) {
           for (let col = 0; col < this.#nrCols; col++) {
-            range.getCell(row, col).format.fill.color = diffFormat[row][col];
+            range.getCell(row, col).format.fill.color = this.diffFormat[row][col].fill;
           }
         }
 
