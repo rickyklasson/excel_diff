@@ -125,16 +125,40 @@ const DiffType = {
 
 const DiffFormat = {
   UNCHANGED: {
-    fill: '#ffffff',
+    fill: {
+      color: '#ffffff',
+    },
+    font: {
+      color: '#000000',
+      strikethrough: false,
+    }
   },
   ADDITION: {
-    fill: "#c9f5c4",
+    fill: {
+      color: '#c9f5c4',
+    },
+    font: {
+      color: '#095e13',
+      strikethrough: false,
+    }
   },
   REMOVAL: {
-    fill: '#edb4b6',
+    fill: {
+      color: '#edb4b6',
+    },
+    font: {
+      color: '#ed3e4c',
+      strikethrough: true,
+    }
   },
   MODIFICATION: {
-    fill: '#a3aff0',
+    fill: {
+      color: '#a3aff0',
+    },
+    font: {
+      color: '#2323cc',
+      strikethrough: false,
+    }
   },
 }
 
@@ -241,7 +265,8 @@ class DiffHandler {
         this.setDiffFormat();
         for (let row = 0; row < this.#nrRows; row++) {
           for (let col = 0; col < this.#nrCols; col++) {
-            range.getCell(row, col).format.fill.color = this.diffFormat[row][col].fill;
+            range.getCell(row, col).format.fill.set(this.diffFormat[row][col].fill);
+            range.getCell(row, col).format.font.set(this.diffFormat[row][col].font);
           }
         }
 
