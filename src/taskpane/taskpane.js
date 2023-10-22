@@ -88,7 +88,7 @@ function addDummyData() {
       [2, 'two'],
       [3, 'three'],
       [4, 'four'],
-      [5, 'five'],
+      [5, 'fives'],
       [6, 'six'],
       [7, 'seven'],
       [8, 'eight'],
@@ -151,12 +151,21 @@ const DiffFormat = {
       strikethrough: true,
     }
   },
+  MODIFICATION_UNCHANGED: {
+    fill: {
+      color: '#a3aff0',
+    },
+    font: {
+      color: '#000000',
+      strikethrough: false,
+    }
+  },
   MODIFICATION: {
     fill: {
       color: '#a3aff0',
     },
     font: {
-      color: '#2323cc',
+      color: '#1111ff',
       strikethrough: false,
     }
   },
@@ -166,8 +175,8 @@ class DiffHandler {
   #nrCols;
   #nrRows;
   #diffs;
-  constructor(diffs) {
-    this.#diffs = diffs;
+  constructor(list_one, list_two) {
+    this.#diffs = diff2D(list_one, list_two);
     this.#nrRows = this.#diffs.length;
     this.#nrCols = this.calcNrCols();
     this.diffData = [];
@@ -213,11 +222,16 @@ class DiffHandler {
 
       for (let colIdx = 0; colIdx < this.#nrCols; colIdx++) {
         let data = '';
-        if (diff.before != null && colIdx < diff.before.length) {
-          data = diff.before[colIdx];
+
+        if (diff.type == DiffType.ADDITION || diff.type == DiffType.MODIFICATION) {
+          if (diff.after != null && colIdx < diff.after.length) {
+            data = diff.after[colIdx];
+          }
         }
-        else if (diff.after != null && colIdx < diff.after.length) {
-          data = diff.after[colIdx];
+        else { // REMEOVAL || UNCHANGED
+          if (diff.before != null && colIdx < diff.before.length) {
+            data = diff.before[colIdx];
+          }
         }
         rowData.push(data);
       }
@@ -241,7 +255,12 @@ class DiffHandler {
           format = DiffFormat.REMOVAL;
         }
         else if (diff.type == DiffType.MODIFICATION) {
-          format = DiffFormat.MODIFICATION;
+          if (diff.before[colIdx] == diff.after[colIdx]) {
+            format = DiffFormat.MODIFICATION_UNCHANGED;
+          }
+          else {
+            format = DiffFormat.MODIFICATION;
+          }
         }
 
         rowFormat.push(format);
@@ -265,8 +284,9 @@ class DiffHandler {
         this.setDiffFormat();
         for (let row = 0; row < this.#nrRows; row++) {
           for (let col = 0; col < this.#nrCols; col++) {
-            range.getCell(row, col).format.fill.set(this.diffFormat[row][col].fill);
-            range.getCell(row, col).format.font.set(this.diffFormat[row][col].font);
+            range.getCell(row, col).format.fill.color = this.diffFormat[row][col].fill.color;
+            range.getCell(row, col).format.font.color = this.diffFormat[row][col].font.color;
+            range.getCell(row, col).format.font.strikethrough = this.diffFormat[row][col].font.strikethrough;
           }
         }
 
@@ -283,7 +303,7 @@ class Diff {
     this.type = type;
     this.before = before;
     this.after = after;
-    this.subDiff = null;
+    this.subDiffs = [];
   }
 
   toString() {
@@ -295,6 +315,12 @@ class Diff {
     }
     else {
       return `  ${this.before}`;
+    }
+  }
+
+  calculateSubDiff() {
+    if (this.type == DiffType.MODIFICATION) {
+      this.subDiffs = diff1D(this.before, this.after);
     }
   }
 }
@@ -392,6 +418,66 @@ function diff1D(list_one, list_two) {
   return diffs;
 }
 
+function clean_diff_list(diffs) {
+  let diff_clean = [];
+  let diff_deque = [];
+
+  console.log(diffs.toString())
+
+  for (let i = 0; i < diffs.length; i++) {
+    let d = diffs[i];
+
+    // New chunk, copy deque to cleaned list and move on to next iteration.
+    if (d.type === DiffType.UNCHANGED) {
+      diff_clean = diff_clean.concat(diff_deque);
+      diff_clean.push(d);
+      diff_deque = [];
+      continue;
+    }
+
+    if (diff_deque.length) {
+      top_diff = diff_deque[0];
+
+      if (d.type == DiffType.ADDITION && top_diff.type == DiffType.REMOVAL) {
+        diff_mod = new Diff(DiffType.MODIFICATION, before = top_diff.before, after = d.after);
+        diff_clean.push(diff_mod);
+        diff_deque.shift();
+      }
+      else if (d.type == DiffType.REMOVAL && top_diff.type == DiffType.ADDITION) {
+        diff_mod = new Diff(DiffType.MODIFICATION, before = d.before, after = top_diff.after);
+        diff_clean.push(diff_mod);
+        diff_deque.shift();
+      }
+      else {
+        // Same type as in deque, push to it.
+        diff_deque.push(d);
+      }
+    }
+    else {
+      if (d.type == DiffType.ADDITION || d.type == DiffType.REMOVAL) {
+        diff_deque.push(d);
+      }
+      else {
+        console.log('THIS SHOULD NEVER HAPPEN!!! Raise error??')
+      }
+    }
+
+  }
+
+  return diff_clean;
+}
+
+function diff2D(list_one, list_two) {
+  let diffs = diff1D(list_one, list_two)
+  diffs = clean_diff_list(diffs);
+
+  for (let d of diffs) {
+    d.calculateSubDiff();
+  }
+
+  return diffs;
+}
+
 function runDiff() {
   Excel.run(async (context) => {
     console.log("runDiff()");
@@ -418,8 +504,7 @@ function runDiff() {
       console.log(`LIST 2: ${list2}`)
   
       // Perform the diff algorithm to get a list of Diffs.
-      let diffs = diff1D(list1, list2);
-      let diffHandler = new DiffHandler(diffs);
+      let diffHandler = new DiffHandler(list1, list2);
       console.log(diffHandler.toString())
 
       // Clean the diff list.
