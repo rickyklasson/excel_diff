@@ -171,7 +171,7 @@ const DiffFormat = {
   },
 }
 
-class DiffCell {
+class CellFormat {
   constructor(row, col, format) {
     this.row = row;
     this.col = col;
@@ -188,7 +188,7 @@ class DiffHandler {
     this.#nrRows = this.#diffs.length;
     this.#nrCols = this.calcNrCols();
     this.diffData = [];
-    this.cellFormat = [];
+    this.cellFormats = [];
   }
 
   toString() {
@@ -247,7 +247,7 @@ class DiffHandler {
   }
 
   setDiffFormat() {
-    this.cellFormat = [];
+    this.cellFormats = [];
 
     for (let diffIdx = 0; diffIdx < this.#nrRows; diffIdx++) {
       let diff = this.#diffs[diffIdx];
@@ -270,7 +270,7 @@ class DiffHandler {
         }
 
         if (format != null) {
-          this.cellFormat.push(new DiffCell(diffIdx, colIdx, format));
+          this.cellFormats.push(new CellFormat(diffIdx, colIdx, format));
         }
       }
     }
@@ -291,12 +291,12 @@ class DiffHandler {
         
         this.setDiffFormat();
         
-        for (let i = 0; i < this.cellFormat.length; i++) {
-          let cell = this.cellFormat[i];
+        for (let i = 0; i < this.cellFormats.length; i++) {
+          let cellFormat = this.cellFormats[i];
 
-          range.getCell(cell.row, cell.col).format.fill.color = cell.format.fill.color;
-          range.getCell(cell.row, cell.col).format.font.color = cell.format.font.color;
-          range.getCell(cell.row, cell.col).format.font.strikethrough = cell.format.font.strikethrough;
+          range.getCell(cellFormat.row, cellFormat.col).format.fill.color = cellFormat.format.fill.color;
+          range.getCell(cellFormat.row, cellFormat.col).format.font.color = cellFormat.format.font.color;
+          range.getCell(cellFormat.row, cellFormat.col).format.font.strikethrough = cellFormat.format.font.strikethrough;
         }
 
         await context.sync();
