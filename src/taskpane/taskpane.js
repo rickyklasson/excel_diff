@@ -135,25 +135,25 @@ const DiffFormat = {
   },
   ADDITION: {
     fill: {
-      color: '#c9f5c4',
+      color: '#daf5d4',
     },
     font: {
-      color: '#095e13',
+      color: '#053d0c',
       strikethrough: false,
     }
   },
   REMOVAL: {
     fill: {
-      color: '#edb4b6',
+      color: '#ebcacb',
     },
     font: {
-      color: '#ed3e4c',
+      color: '#93141a',
       strikethrough: true,
     }
   },
   MODIFICATION_UNCHANGED: {
     fill: {
-      color: '#a3aff0',
+      color: '#eaeef6',
     },
     font: {
       color: '#000000',
@@ -162,13 +162,21 @@ const DiffFormat = {
   },
   MODIFICATION: {
     fill: {
-      color: '#a3aff0',
+      color: '#c3cce3',
     },
     font: {
-      color: '#1111ff',
+      color: '#142093',
       strikethrough: false,
     }
   },
+}
+
+class DiffCell {
+  constructor(row, col, format) {
+    this.row = row;
+    this.col = col;
+    this.format = format;
+  }
 }
 
 class DiffHandler {
@@ -180,8 +188,7 @@ class DiffHandler {
     this.#nrRows = this.#diffs.length;
     this.#nrCols = this.calcNrCols();
     this.diffData = [];
-    this.diffFormat = [];
-    this.diffFormat = [];
+    this.cellFormat = [];
   }
 
   toString() {
@@ -240,14 +247,13 @@ class DiffHandler {
   }
 
   setDiffFormat() {
-    this.diffFormat = [];
+    this.cellFormat = [];
 
     for (let diffIdx = 0; diffIdx < this.#nrRows; diffIdx++) {
-      let rowFormat = [];
       let diff = this.#diffs[diffIdx];
 
       for (let colIdx = 0; colIdx < this.#nrCols; colIdx++) {
-        let format = DiffFormat.UNCHANGED;
+        let format = null;
         if (diff.type == DiffType.ADDITION) {
           format = DiffFormat.ADDITION; 
         }
@@ -263,9 +269,10 @@ class DiffHandler {
           }
         }
 
-        rowFormat.push(format);
+        if (format != null) {
+          this.cellFormat.push(new DiffCell(diffIdx, colIdx, format));
+        }
       }
-      this.diffFormat.push(rowFormat);
     }
   }
 
@@ -280,14 +287,16 @@ class DiffHandler {
         
         this.setDiffData();
         range.values = this.diffData;
+        range.format.autofitColumns();
         
         this.setDiffFormat();
-        for (let row = 0; row < this.#nrRows; row++) {
-          for (let col = 0; col < this.#nrCols; col++) {
-            range.getCell(row, col).format.fill.color = this.diffFormat[row][col].fill.color;
-            range.getCell(row, col).format.font.color = this.diffFormat[row][col].font.color;
-            range.getCell(row, col).format.font.strikethrough = this.diffFormat[row][col].font.strikethrough;
-          }
+        
+        for (let i = 0; i < this.cellFormat.length; i++) {
+          let cell = this.cellFormat[i];
+
+          range.getCell(cell.row, cell.col).format.fill.color = cell.format.fill.color;
+          range.getCell(cell.row, cell.col).format.font.color = cell.format.font.color;
+          range.getCell(cell.row, cell.col).format.font.strikethrough = cell.format.font.strikethrough;
         }
 
         await context.sync();
@@ -381,7 +390,7 @@ function diff1D(list_one, list_two) {
   let i = list_one.length;
   let j = list_two.length;
 
-  console.log(`LCS: ${lcs}`);
+  //console.log(`LCS: ${lcs}`);
 
   // Iterate until reaching end of both lists.
   while (i != 0 || j != 0) {
@@ -422,7 +431,7 @@ function clean_diff_list(diffs) {
   let diff_clean = [];
   let diff_deque = [];
 
-  console.log(diffs.toString())
+  //console.log(diffs.toString())
 
   for (let i = 0; i < diffs.length; i++) {
     let d = diffs[i];
@@ -500,12 +509,12 @@ function runDiff() {
       let list1 = range1.values;
       let list2 = range2.values;
 
-      console.log(`LIST 1: ${list1}`)
-      console.log(`LIST 2: ${list2}`)
+      //console.log(`LIST 1: ${list1}`)
+      //console.log(`LIST 2: ${list2}`)
   
       // Perform the diff algorithm to get a list of Diffs.
       let diffHandler = new DiffHandler(list1, list2);
-      console.log(diffHandler.toString())
+      //console.log(diffHandler.toString())
 
       // Clean the diff list.
 

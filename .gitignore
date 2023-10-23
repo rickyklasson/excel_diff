@@ -4,3 +4,4 @@ assets
 dist
 node_modules
 package-lock.json
+sample_csv*
