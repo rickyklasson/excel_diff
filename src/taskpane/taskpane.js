@@ -221,6 +221,7 @@ class DiffHandler {
   }
 
   setDiffData() {
+    // TODO: Collapse unchanged rows?
     this.diffData = [];
 
     for (let diffIdx = 0; diffIdx < this.#nrRows; diffIdx++) {
@@ -335,7 +336,17 @@ class Diff {
 }
 
 const compareArrays = (a, b) => {
-  return JSON.stringify(a) === JSON.stringify(b);
+  if (a.length !== b.length) {
+    return false;
+  }
+
+  // We can use either array length here since length inequality is checked above.
+  for (let i = 0; i < a.length; i++) {
+    if (a[i] !== b[i]) {
+      return false;
+    }
+  }
+  return true;
 }
 
 const equalEntries = (a, b) => {
@@ -477,12 +488,19 @@ function clean_diff_list(diffs) {
 }
 
 function diff2D(list_one, list_two) {
-  let diffs = diff1D(list_one, list_two)
-  diffs = clean_diff_list(diffs);
+  console.time('diff1D');
+  let diffs = diff1D(list_one, list_two);
+  console.timeEnd('diff1D');
 
+  console.time('cleanDiff');
+  diffs = clean_diff_list(diffs);
+  console.timeEnd('cleanDiff');
+
+  console.time('subDiffs');
   for (let d of diffs) {
     d.calculateSubDiff();
   }
+  console.timeEnd('subDiffs');
 
   return diffs;
 }
@@ -516,23 +534,19 @@ function runDiff() {
       let diffHandler = new DiffHandler(list1, list2);
       //console.log(diffHandler.toString())
 
-      // Clean the diff list.
-
-      // Create corresponding formatting lists for the output.
-
       // Create sheet to display diff.
       let resultSheetName = `Result_${Math.floor(Math.random() * 1000)}`;
       context.workbook.worksheets.add(resultSheetName);
       await context.sync();
 
       // Display diff in result sheet.
+      console.time('toSheet');
       diffHandler.toSheet(resultSheetName);
-
-      // TODO: Write methods to view and hide the computed diff.
+      console.timeEnd('toSheet');
+      
+      await context.sync();
     } catch (error) {
       console.log(error);
     }
-
-    await context.sync();
   });
 }
