@@ -93,6 +93,9 @@ function addDummyData() {
       [7, 'seven'],
       [8, 'eight'],
       [9, 'nine'],
+      [11, 'eleven'],
+      [12, 'twelve'],
+      [13, 'thirteen'],
     ];
 
     let sheet2Values = [
@@ -106,10 +109,13 @@ function addDummyData() {
       [8, 'eights'],
       [9, 'nine'],
       [10, 'ten'],
+      [11, 'eleven'],
+      [12, 'twelve'],
+      [13, 'thirteen'],
     ];
 
-    sheet1.getRange("A1:B9").values = sheet1Values;
-    sheet2.getRange("A1:B10").values = sheet2Values;
+    sheet1.getRange("A1:B12").values = sheet1Values;
+    sheet2.getRange("A1:B13").values = sheet2Values;
     await context.sync();
   });
 }
@@ -394,46 +400,96 @@ function computeLCSLength(list_one, list_two) {
   return lcs;
 }
 
-function diff1D(list_one, list_two) {
-  let lcs = computeLCSLength(list_one, list_two);
-  let diffs = []
+function trimEqualEntries(listOne, listTwo) {
+  let diffsPre = []; // Diffs to prepend to the final diffs list
+  let diffsPost = []; // Diffs to append to the final diffs list
 
-  let i = list_one.length;
-  let j = list_two.length;
+  if (listOne.length === 0 || listTwo.length === 0) {
+    return [diffsPre, diffsPost];
+  }
 
+  let i = 0;
+
+  while (i < listOne.length && i < listTwo.length) {
+    if (equalEntries(listOne[i], listTwo[i])) {
+      diffsPre.push(new Diff(DiffType.UNCHANGED, before=listOne[i], after=listOne[i]));
+    }
+    else {
+      break;  
+    }
+    i++;
+  }
+
+  j = listOne.length - 1;
+  k = listTwo.length - 1;
+
+  while (j > i && k > i) {
+    if (equalEntries(listOne[j], listTwo[k])) {
+      diffsPost.unshift(new Diff(DiffType.UNCHANGED, before = listOne[j], after = listOne[j]));
+    }
+    else {
+      break;  
+    }
+    j--;
+    k--;
+  }
+
+  return [diffsPre, diffsPost];
+}
+
+function diff1D(listOne, listTwo) {
+  let diffs = [];
+  const [diffsPre, diffsPost] = trimEqualEntries(listOne, listTwo);
+
+  // Actually trim the lists before performing the rest of the algorithm.
+  listOne = listOne.slice(diffsPre.length, diffsPost.length ? -diffsPost.length : listOne.length);
+  listTwo = listTwo.slice(diffsPre.length, diffsPost.length ? -diffsPost.length : listOne.length);
+  
+  let lcs = computeLCSLength(listOne, listTwo);
+  
+  let i = listOne.length;
+  let j = listTwo.length;
+  
   //console.log(`LCS: ${lcs}`);
-
+  
   // Iterate until reaching end of both lists.
   while (i != 0 || j != 0) {
     // If reached end of one of the lists, append the remaining additions and removals.
     if (i === 0) {
-      diffs.push(new Diff(DiffType.ADDITION, before = null, after = list_two[j - 1]));
+      diffs.push(new Diff(DiffType.ADDITION, before = null, after = listTwo[j - 1]));
       j--;
     }
     else if (j === 0) {
-      diffs.push(new Diff(DiffType.REMOVAL, before = list_one[i - 1], after = null));
+      diffs.push(new Diff(DiffType.REMOVAL, before = listOne[i - 1], after = null));
       i--;
     }
 
     // Otherwise, parts of both lists remain. If current entries are equal, they belong to the lcs.
-    else if (equalEntries(list_one[i - 1], list_two[j - 1])) {
-      diffs.push(new Diff(DiffType.UNCHANGED, before=list_one[i - 1], after=list_one[i - 1]));
+    else if (equalEntries(listOne[i - 1], listTwo[j - 1])) {
+      diffs.push(new Diff(DiffType.UNCHANGED, before=listOne[i - 1], after=listOne[i - 1]));
       i--;
       j--;
     }
 
     // In any other case, move in the direction of the lcs.
     else if (lcs[i - 1][j] <= lcs[i][j - 1]) {
-      diffs.push(new Diff(DiffType.ADDITION, before = null, after = list_two[j - 1]));
+      diffs.push(new Diff(DiffType.ADDITION, before = null, after = listTwo[j - 1]));
       j--;
     }
     else {
-      diffs.push(new Diff(DiffType.REMOVAL, before = list_one[i - 1], after = null));
+      diffs.push(new Diff(DiffType.REMOVAL, before = listOne[i - 1], after = null));
       i--;
     }
   }
 
-  diffs = diffs.reverse();
+  diffs.reverse();
+
+  if (diffsPre.length) {
+    diffs.unshift(...diffsPre);
+  }
+  if (diffsPost.length) {
+    diffs = diffs.concat(diffsPost);
+  }
 
   return diffs;
 }
