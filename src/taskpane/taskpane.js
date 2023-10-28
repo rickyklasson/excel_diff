@@ -1,5 +1,3 @@
-/*global document, Office*/
-
 let _count = 0;
 let sheet1Selector = document.getElementById("select-1");
 let sheet2Selector = document.getElementById("select-2");
@@ -20,11 +18,9 @@ Office.onReady(() => {
 });
 
 function updateSheetLists() {
-  /* Add periodic function to update list of worksheets if it has updated. */
+  // Periodic function to update list of worksheets if worksheets have been added.
 
   Excel.run(async (context) => {
-    //console.log("updateSheetLists()");
-
     // Load sheets from workbook.
     // TODO: Can we compare sheets from different workbooks?
     let sheets = context.workbook.worksheets;
@@ -39,7 +35,6 @@ function updateSheetLists() {
     if (JSON.stringify(sheetNames) === JSON.stringify(sheetNamesOld)) {
       return;
     }
-    //console.log("Updating lists!");
     
     let sheet1SelName = sheetNamesOld[sheet1Selector.selectedIndex];
     let sheet2SelName = sheetNamesOld[sheet2Selector.selectedIndex];
@@ -121,7 +116,6 @@ function addDummyData() {
 }
 
 /* ---- DIFF FUNCTIONS ---- */
-
 const DiffType = {
   UNCHANGED: 0,
   ADDITION: 1,
@@ -189,8 +183,8 @@ class DiffHandler {
   #nrCols;
   #nrRows;
   #diffs;
-  constructor(list_one, list_two) {
-    this.#diffs = diff2D(list_one, list_two);
+  constructor(list1, list2) {
+    this.#diffs = diff2D(list1, list2);
     this.#nrRows = this.#diffs.length;
     this.#nrCols = this.calcNrCols();
     this.diffData = [];
@@ -227,7 +221,6 @@ class DiffHandler {
   }
 
   setDiffData() {
-    // TODO: Collapse unchanged rows?
     this.diffData = [];
 
     for (let diffIdx = 0; diffIdx < this.#nrRows; diffIdx++) {
@@ -368,14 +361,14 @@ const equalEntries = (a, b) => {
  * Computes the LCS (Longest Common Subsequence) lengths for the given lists. The lists are expected to be 2D, i.e.
  * lists of lists. Wikipedia explanation: https://en.wikipedia.org/wiki/Longest_common_subsequence
  * 
- * @param {list} l1 First list for LCS algorithm. 
- * @param {list} l2 Second list for LCS algorithm.
- * @returns {list}  2D matrix of LCS lengths. 
+ * @param {list} list1 First list for LCS algorithm. 
+ * @param {list} list2 Second list for LCS algorithm.
+ * @returns {list}  2D list of LCS lengths. 
  */
-function computeLCSLength(list_one, list_two) {
+function computeLCSLength(list1, list2) {
   /* Computes an LCS table for lists l1 and l2. */
-  let n = list_one.length;
-  let m = list_two.length;
+  let n = list1.length;
+  let m = list2.length;
 
   // Store results in an (n+1) * (m+1) matrix. +1 for empty strings.
   let lcs = Array(n + 1).fill().map(() => Array(m + 1).fill(0))
@@ -386,7 +379,7 @@ function computeLCSLength(list_one, list_two) {
         if (i === 0 || j === 0) {
           lcs[i][j] = 0;
         }
-        else if (compareArrays(list_one[i - 1], list_two[j - 1])) {
+        else if (compareArrays(list1[i - 1], list2[j - 1])) {
           lcs[i][j] = 1 + lcs[i - 1][j - 1];
         }
         else {
@@ -400,95 +393,95 @@ function computeLCSLength(list_one, list_two) {
   return lcs;
 }
 
-function trimEqualEntries(listOne, listTwo) {
-  let diffsPre = []; // Diffs to prepend to the final diffs list
-  let diffsPost = []; // Diffs to append to the final diffs list
+function trimEqualEntries(list1, list2) {
+  // Compares the lists for equals entries at start and end. These entries can then be directly
+  // added to the list of diffs and do not need to be part of the LCS calculation.
 
-  if (listOne.length === 0 || listTwo.length === 0) {
-    return [diffsPre, diffsPost];
+  let diffsStart = []; // Diffs to prepend to the final diffs list
+  let diffsEnd = []; // Diffs to append to the final diffs list
+  let startIdx, endIdxOne, endIdxTwo;
+
+  if (list1.length === 0 || list2.length === 0) {
+    return [diffsStart, diffsEnd];
   }
 
-  let i = 0;
-
-  while (i < listOne.length && i < listTwo.length) {
-    if (equalEntries(listOne[i], listTwo[i])) {
-      diffsPre.push(new Diff(DiffType.UNCHANGED, before=listOne[i], after=listOne[i]));
+  startIdx = 0;
+  while (startIdx < list1.length && startIdx < list2.length) {
+    if (equalEntries(list1[startIdx], list2[startIdx])) {
+      diffsStart.push(new Diff(DiffType.UNCHANGED, before=list1[startIdx], after=list1[startIdx]));
     }
     else {
       break;  
     }
-    i++;
+    startIdx++;
   }
 
-  j = listOne.length - 1;
-  k = listTwo.length - 1;
-
-  while (j > i && k > i) {
-    if (equalEntries(listOne[j], listTwo[k])) {
-      diffsPost.unshift(new Diff(DiffType.UNCHANGED, before = listOne[j], after = listOne[j]));
+  endIdxOne = list1.length - 1;
+  endIdxTwo = list2.length - 1;
+  while (endIdxOne > startIdx && endIdxTwo > startIdx) {
+    if (equalEntries(list1[endIdxOne], list2[endIdxTwo])) {
+      diffsEnd.unshift(new Diff(DiffType.UNCHANGED, before = list1[endIdxOne], after = list1[endIdxOne]));
     }
     else {
       break;  
     }
-    j--;
-    k--;
+    endIdxOne--;
+    endIdxTwo--;
   }
 
-  return [diffsPre, diffsPost];
+  return [diffsStart, diffsEnd];
 }
 
-function diff1D(listOne, listTwo) {
+function diff1D(list1, list2) {
   let diffs = [];
-  const [diffsPre, diffsPost] = trimEqualEntries(listOne, listTwo);
+  const [diffsStart, diffsEnd] = trimEqualEntries(list1, list2);
 
   // Actually trim the lists before performing the rest of the algorithm.
-  listOne = listOne.slice(diffsPre.length, diffsPost.length ? -diffsPost.length : listOne.length);
-  listTwo = listTwo.slice(diffsPre.length, diffsPost.length ? -diffsPost.length : listOne.length);
+  list1 = list1.slice(diffsStart.length, diffsEnd.length ? -diffsEnd.length : list1.length);
+  list2 = list2.slice(diffsStart.length, diffsEnd.length ? -diffsEnd.length : list1.length);
   
-  let lcs = computeLCSLength(listOne, listTwo);
+  let lcs = computeLCSLength(list1, list2);
   
-  let i = listOne.length;
-  let j = listTwo.length;
-  
-  //console.log(`LCS: ${lcs}`);
+  let i = list1.length;
+  let j = list2.length;
   
   // Iterate until reaching end of both lists.
   while (i != 0 || j != 0) {
     // If reached end of one of the lists, append the remaining additions and removals.
     if (i === 0) {
-      diffs.push(new Diff(DiffType.ADDITION, before = null, after = listTwo[j - 1]));
+      diffs.push(new Diff(DiffType.ADDITION, before = null, after = list2[j - 1]));
       j--;
     }
     else if (j === 0) {
-      diffs.push(new Diff(DiffType.REMOVAL, before = listOne[i - 1], after = null));
+      diffs.push(new Diff(DiffType.REMOVAL, before = list1[i - 1], after = null));
       i--;
     }
 
     // Otherwise, parts of both lists remain. If current entries are equal, they belong to the lcs.
-    else if (equalEntries(listOne[i - 1], listTwo[j - 1])) {
-      diffs.push(new Diff(DiffType.UNCHANGED, before=listOne[i - 1], after=listOne[i - 1]));
+    else if (equalEntries(list1[i - 1], list2[j - 1])) {
+      diffs.push(new Diff(DiffType.UNCHANGED, before=list1[i - 1], after=list1[i - 1]));
       i--;
       j--;
     }
 
     // In any other case, move in the direction of the lcs.
     else if (lcs[i - 1][j] <= lcs[i][j - 1]) {
-      diffs.push(new Diff(DiffType.ADDITION, before = null, after = listTwo[j - 1]));
+      diffs.push(new Diff(DiffType.ADDITION, before = null, after = list2[j - 1]));
       j--;
     }
     else {
-      diffs.push(new Diff(DiffType.REMOVAL, before = listOne[i - 1], after = null));
+      diffs.push(new Diff(DiffType.REMOVAL, before = list1[i - 1], after = null));
       i--;
     }
   }
 
   diffs.reverse();
 
-  if (diffsPre.length) {
-    diffs.unshift(...diffsPre);
+  if (diffsStart.length) {
+    diffs.unshift(...diffsStart);
   }
-  if (diffsPost.length) {
-    diffs = diffs.concat(diffsPost);
+  if (diffsEnd.length) {
+    diffs = diffs.concat(diffsEnd);
   }
 
   return diffs;
@@ -497,8 +490,6 @@ function diff1D(listOne, listTwo) {
 function clean_diff_list(diffs) {
   let diff_clean = [];
   let diff_deque = [];
-
-  //console.log(diffs.toString())
 
   for (let i = 0; i < diffs.length; i++) {
     let d = diffs[i];
@@ -534,42 +525,35 @@ function clean_diff_list(diffs) {
         diff_deque.push(d);
       }
       else {
-        console.log('THIS SHOULD NEVER HAPPEN!!! Raise error??')
+        throw new Error('This should never happen. Fix implementation!');
       }
     }
-
   }
 
   return diff_clean;
 }
 
-function diff2D(list_one, list_two) {
-  console.time('diff1D');
-  let diffs = diff1D(list_one, list_two);
-  console.timeEnd('diff1D');
+function diff2D(list1, list2) {
+  let diffs = diff1D(list1, list2);
 
-  console.time('cleanDiff');
   diffs = clean_diff_list(diffs);
-  console.timeEnd('cleanDiff');
 
-  console.time('subDiffs');
   for (let d of diffs) {
     d.calculateSubDiff();
   }
-  console.timeEnd('subDiffs');
 
   return diffs;
 }
 
 function runDiff() {
   Excel.run(async (context) => {
-    console.log("runDiff()");
+    console.log("-------- RUNNING MAIN DIFF FUNCTION -------");
 
     try {
       // Get data from selected excel sheets.
       let sheet1Name = sheet1Selector.options[sheet1Selector.selectedIndex].value;
       let sheet2Name = sheet2Selector.options[sheet2Selector.selectedIndex].value;
-      console.log(`Comparing    ${sheet1Name}    to    ${sheet2Name}`)
+      console.log(`Comparing sheets: ${sheet1Name}  and  ${sheet2Name}`)
 
       let sheet1 = context.workbook.worksheets.getItem(sheet1Name);
       let sheet2 = context.workbook.worksheets.getItem(sheet2Name);
@@ -583,12 +567,8 @@ function runDiff() {
       let list1 = range1.values;
       let list2 = range2.values;
 
-      //console.log(`LIST 1: ${list1}`)
-      //console.log(`LIST 2: ${list2}`)
-  
       // Perform the diff algorithm to get a list of Diffs.
       let diffHandler = new DiffHandler(list1, list2);
-      //console.log(diffHandler.toString())
 
       // Create sheet to display diff.
       let resultSheetName = `Result_${Math.floor(Math.random() * 1000)}`;
@@ -596,9 +576,7 @@ function runDiff() {
       await context.sync();
 
       // Display diff in result sheet.
-      console.time('toSheet');
       diffHandler.toSheet(resultSheetName);
-      console.timeEnd('toSheet');
       
       await context.sync();
     } catch (error) {
