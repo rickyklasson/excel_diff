@@ -138,8 +138,16 @@ function runDiff() {
       let list1 = range1.values;
       let list2 = range2.values;
 
+      if (list1.length == 1 && list1[0] == '') {
+        list1 = [];
+      }
+      if (list2.length == 1 && list2[0] == '') {
+        list2 = [];
+      }
+
       // Perform the diff algorithm to get a list of Diffs.
       let diffHandler = new DiffHandler(list1, list2);
+      diffHandler.compute();
 
       // Create sheet to display diff.
       let resultSheetName = `Result_${Math.floor(Math.random() * 1000)}`;

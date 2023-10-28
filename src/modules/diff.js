@@ -68,11 +68,31 @@ class DiffHandler {
   #nrRows;
   #diffs;
   constructor(list1, list2) {
-    this.#diffs = diff2D(list1, list2);
-    this.#nrRows = this.#diffs.length;
-    this.#nrCols = this.calcNrCols();
+    this.list1 = list1;
+    this.list2 = list2;
+    this.#diffs = []
+    this.#nrRows = 0;
+    this.#nrCols = 0;
     this.diffData = [];
     this.cellFormats = [];
+  }
+
+  get nrRows() {
+    return this.#nrRows;
+  }
+
+  get nrCols() {
+    return this.#nrCols;
+  }
+  
+  get diffs() {
+    return this.#diffs;
+  }
+
+  compute() {
+    this.#diffs = diff2D(this.list1, this.list2);
+    this.#nrRows = this.#diffs.length;
+    this.#nrCols = this.calcNrCols();
   }
 
   toString() {
@@ -84,24 +104,17 @@ class DiffHandler {
 
   calcNrCols() {
     let maxCols = 0;
-    for (let i = 0; i < this.#nrRows; i++) {
-      let diff = this.#diffs[i];
-      if (diff.before != null && diff.before.length > maxCols) {
-        maxCols = diff.before.length;
+    for (let i = 0; i < this.list1.length; i++) {
+      if (this.list1[i].length > maxCols) {
+        maxCols = this.list1[i].length;
       }
-      if (diff.after != null && diff.after.length > maxCols) {
-        maxCols = diff.after.length;
+    }
+    for (let i = 0; i < this.list2.length; i++) {
+      if (this.list2[i].length > maxCols) {
+        maxCols = this.list2[i].length;
       }
     }
     return maxCols;
-  }
-
-  get nrRows() {
-    return this.#nrRows;
-  }
-
-  get nrCols() {
-    return this.#nrCols;
   }
 
   setDiffData() {
@@ -158,34 +171,33 @@ class DiffHandler {
   }
 
   toSheet(sheetName) {
-    Excel.run(async (context) => {
-      try {
+    try {
+      Excel.run(async (context) => {
         let resultSheet = context.workbook.worksheets.getItem(sheetName);
-
+  
         let range = resultSheet.getRangeByIndexes(0, 0, this.#nrRows, this.#nrCols);
         range.load(["values"]);
         await context.sync();
-
+  
         this.setDiffData();
         range.values = this.diffData;
         range.format.autofitColumns();
-
+  
         this.setDiffFormat();
-
+  
         for (let i = 0; i < this.cellFormats.length; i++) {
           let cellFormat = this.cellFormats[i];
-
+  
           range.getCell(cellFormat.row, cellFormat.col).format.fill.color = cellFormat.format.fill.color;
           range.getCell(cellFormat.row, cellFormat.col).format.font.color = cellFormat.format.font.color;
           range.getCell(cellFormat.row, cellFormat.col).format.font.strikethrough =
             cellFormat.format.font.strikethrough;
         }
-
         await context.sync();
-      } catch (error) {
-        console.log(error);
-      }
-    });
+      });
+    } catch (error) {
+      console.log(error);
+    }
   }
 }
 
@@ -327,16 +339,21 @@ function clean_diff_list(diffs) {
     }
   }
 
+  if (diff_deque.length > 0) {
+    diff_clean = diff_clean.concat(diff_deque);
+  }
+
   return diff_clean;
 }
 
 function diff1D(list1, list2) {
   let diffs = [];
+
   const [diffsStart, diffsEnd] = trimEqualEntries(list1, list2);
 
   // Actually trim the lists before performing the rest of the algorithm.
   list1 = list1.slice(diffsStart.length, diffsEnd.length ? -diffsEnd.length : list1.length);
-  list2 = list2.slice(diffsStart.length, diffsEnd.length ? -diffsEnd.length : list1.length);
+  list2 = list2.slice(diffsStart.length, diffsEnd.length ? -diffsEnd.length : list2.length);
 
   let lcs = computeLCSLength(list1, list2);
 
@@ -395,4 +412,4 @@ function diff2D(list1, list2) {
   return diffs;
 }
 
-export { DiffHandler, diff2D };
+export { DiffHandler, diff2D, DiffType };
