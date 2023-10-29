@@ -14,7 +14,7 @@ test("diff2D with empty lists", () => {
   expect(dh.diffs.length).toBe(0);
 });
 
-test("diff2D with list1 being empty", () => {
+test("diff2D with empty list1", () => {
   let list1 = [];
   let list2 = [
     [1, 2, 3, 4],
@@ -32,7 +32,7 @@ test("diff2D with list1 being empty", () => {
   expect(dh.diffs.length).toBe(3);
 });
 
-test("diff2D with list2 being empty", () => {
+test("diff2D with empty list2", () => {
   let list1 = [
     ["a", "b", "c", "d"],
     [5, 6, 7, 8],
@@ -132,8 +132,6 @@ test("diff2D with differing nr cols", () => {
   let dh = new DiffHandler(list1, list2);
   dh.compute();
 
-  console.log(dh.diffs);
-
   for (let i = 0; i < dh.diffs.length; i++) {
     if (i <= 0) {
       expect(dh.diffs[i].type).toBe(DiffType.REMOVAL);
@@ -149,4 +147,68 @@ test("diff2D with differing nr cols", () => {
 
   expect(dh.nrCols).toBe(13);
   expect(dh.diffs.length).toBe(6);
+});
+
+test("diff2D with only modifications", () => {
+  let list1 = [
+    [1],
+    [1, 2],
+    [1, 2, 3],
+    [1, 2, 3, 4],
+    [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13],
+  ];
+  let list2 = [
+    [1, 3],
+    [3, 4],
+    [5, 6],
+    [7, 8],
+    [9, 10],
+  ];
+
+  let dh = new DiffHandler(list1, list2);
+  dh.compute();
+
+  for (let i = 0; i < dh.diffs.length; i++) {
+    expect(dh.diffs[i].type).toBe(DiffType.MODIFICATION);
+  }
+
+  expect(dh.nrCols).toBe(13);
+  expect(dh.diffs.length).toBe(5);
+});
+
+test("diff2D with every other modifications", () => {
+  let list1 = [
+    [1],
+    [1, 2],
+    [1, 2, 3],
+    [1, 2, 3, 4],
+    [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13],
+    [1, 2, 3, 4, 5],
+    [6, 7, 8, 9],
+  ];
+  let list2 = [
+    [1],
+    [3, 2],
+    [1, 2, 3],
+    [6, 8, 3, 4],
+    [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13],
+    [7, 8, 3, 4, 5],
+    [6, 7, 8, 9],
+  ];
+
+  let dh = new DiffHandler(list1, list2);
+  dh.compute();
+
+  console.log(dh.diffs);
+
+  for (let i = 0; i < dh.diffs.length; i++) {
+    if (i % 2 == 0) {
+      expect(dh.diffs[i].type).toBe(DiffType.UNCHANGED);
+    } else {
+      expect(dh.diffs[i].type).toBe(DiffType.MODIFICATION);
+    }
+  }
+
+  expect(dh.nrCols).toBe(13);
+  expect(dh.diffs.length).toBe(7);
 });
