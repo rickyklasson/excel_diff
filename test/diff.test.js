@@ -199,8 +199,6 @@ test("diff2D with every other modifications", () => {
   let dh = new DiffHandler(list1, list2);
   dh.compute();
 
-  console.log(dh.diffs);
-
   for (let i = 0; i < dh.diffs.length; i++) {
     if (i % 2 == 0) {
       expect(dh.diffs[i].type).toBe(DiffType.UNCHANGED);
