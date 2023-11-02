@@ -4,11 +4,6 @@ let sheet1Selector = document.getElementById("select-1");
 let sheet2Selector = document.getElementById("select-2");
 let sheetNamesOld = [];
 
-sheet1Selector.addEventListener("change", (event) => {
-  console.log(`Selected:${event.target.value}`);
-  sheet1Selector.value = event.target.value;
-});
-
 Office.onReady(() => {
   document.getElementById("run-diff").onclick = runDiff;
 
@@ -26,7 +21,7 @@ function updateSheetLists() {
     sheets.load("items/name");
     await context.sync();
 
-    let sheetNames = []
+    let sheetNames = [];
     sheets.items.forEach((sheet) => {
       sheetNames.push(sheet.name);
     });
@@ -99,10 +94,19 @@ function runDiff() {
       diffHandler.compute();
 
       // Create sheet to display diff.
-      // TODO: Fix name generation.
-      let resultSheetName = `D_${sheet1Name}_${sheet2Name}_${Math.floor(Math.random() * 1000).toString()}`;
+      // NOTE: Max worksheet name length is 31 chars
+      let sheetId = 0;
+      let resultSheetNameBase = `D_${sheet1Name.substring(0, 9)}__${sheet2Name.substring(0, 9)}`;
+      let resultSheetName = resultSheetNameBase.concat(`_(${sheetId})`);
+      while (sheetNamesOld.includes(resultSheetName)) {
+        // Ensure unique sheet name.
+        sheetId++;
+        resultSheetName = resultSheetNameBase.concat(`_(${sheetId})`);
+      }
+
       context.workbook.worksheets.add(resultSheetName);
       await context.sync();
+      updateSheetLists();
 
       // Display diff in result sheet.
       diffHandler.toSheet(resultSheetName);
