@@ -16,7 +16,6 @@ function updateSheetLists() {
 
   Excel.run(async (context) => {
     // Load sheets from workbook.
-    // TODO: Can we compare sheets from different workbooks?
     let sheets = context.workbook.worksheets;
     sheets.load("items/name");
     await context.sync();
