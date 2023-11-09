@@ -59,11 +59,22 @@ function updateSheetLists() {
   });
 }
 
+function setUIRunning() {
+  document.getElementById("run-diff").disabled = true;
+}
+
+function resetUI() {
+  document.getElementById("run-diff").disabled = false;
+}
+
 function runDiff() {
   Excel.run(async (context) => {
     console.log("-------- RUNNING MAIN DIFF FUNCTION -------");
 
     try {
+      // Loading indicator
+      setUIRunning();
+
       // Get data from selected excel sheets.
       let sheet1Name = sheet1Selector.options[sheet1Selector.selectedIndex].value;
       let sheet2Name = sheet2Selector.options[sheet2Selector.selectedIndex].value;
@@ -109,10 +120,12 @@ function runDiff() {
 
       // Display diff in result sheet.
       diffHandler.toSheet(resultSheetName);
-      
+
       await context.sync();
     } catch (error) {
       console.log(error);
+    } finally {
+      resetUI();
     }
   });
 }
