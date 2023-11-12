@@ -8,7 +8,7 @@
   <Description DefaultValue="A template to get started."/>
   <IconUrl DefaultValue="https://exceldiffrk.z1.web.core.windows.net/assets/diff-icon-a-32.png"/>
   <HighResolutionIconUrl DefaultValue="https://exceldiffrk.z1.web.core.windows.net/assets/diff-icon-a-64.png"/>
-  <SupportUrl DefaultValue="https://www.contoso.com/help"/>
+  <SupportUrl DefaultValue="https://support.microsoft.com/en-au/office/add-or-remove-add-ins-in-excel-0af570c4-5cf3-4fa9-9b88-403625a0b460"/>
   <AppDomains>
     <AppDomain>https://www.contoso.com</AppDomain>
   </AppDomains>
@@ -38,7 +38,7 @@
           </GetStarted>
           <FunctionFile resid="Taskpane.Url"/>
           <ExtensionPoint xsi:type="PrimaryCommandSurface">
-            <OfficeTab id="TabView">
+            <OfficeTab id="TabData">
               <Group id="CommandsGroup">
                 <Label resid="CommandsGroup.Label"/>
                 <Icon>
@@ -81,12 +81,12 @@
       </bt:Urls>
       <bt:ShortStrings>
         <bt:String id="GetStarted.Title" DefaultValue="Excel Diff add-in"/>
-        <bt:String id="CommandsGroup.Label" DefaultValue="Diff"/>
-        <bt:String id="TaskpaneButton.Label" DefaultValue="Taskpane"/>
+        <bt:String id="CommandsGroup.Label" DefaultValue="Compare"/>
+        <bt:String id="TaskpaneButton.Label" DefaultValue="Diff"/>
       </bt:ShortStrings>
       <bt:LongStrings>
-        <bt:String id="GetStarted.Description" DefaultValue="Diff add-in loaded successfully. Go to the 'View' tab and to get started."/>
-        <bt:String id="TaskpaneButton.Tooltip" DefaultValue="Click to show the diff taskpane"/>
+        <bt:String id="GetStarted.Description" DefaultValue="Diff add-in loaded successfully. Go to the 'Data' tab and to get started."/>
+        <bt:String id="TaskpaneButton.Tooltip" DefaultValue="Show the diff taskpane"/>
       </bt:LongStrings>
     </Resources>
   </VersionOverrides>
