@@ -171,33 +171,31 @@ class DiffHandler {
   }
 
   toSheet(sheetName) {
-    try {
-      Excel.run(async (context) => {
-        let resultSheet = context.workbook.worksheets.getItem(sheetName);
-  
-        let range = resultSheet.getRangeByIndexes(0, 0, this.#nrRows, this.#nrCols);
-        range.load(["values"]);
-        await context.sync();
-  
-        this.setDiffData();
-        range.values = this.diffData;
-        range.format.autofitColumns();
-  
-        this.setDiffFormat();
-  
-        for (let i = 0; i < this.cellFormats.length; i++) {
-          let cellFormat = this.cellFormats[i];
-  
-          range.getCell(cellFormat.row, cellFormat.col).format.fill.color = cellFormat.format.fill.color;
-          range.getCell(cellFormat.row, cellFormat.col).format.font.color = cellFormat.format.font.color;
-          range.getCell(cellFormat.row, cellFormat.col).format.font.strikethrough =
-            cellFormat.format.font.strikethrough;
-        }
-        await context.sync();
-      });
-    } catch (error) {
-      console.log(error);
-    }
+    Excel.run(async (context) => {
+      let resultSheet = context.workbook.worksheets.getItem(sheetName);
+
+      let range = resultSheet.getRangeByIndexes(0, 0, this.#nrRows, this.#nrCols);
+      range.load(["values"]);
+      await context.sync();
+
+      this.setDiffData();
+      range.values = this.diffData;
+      range.format.autofitColumns();
+
+      this.setDiffFormat();
+
+      for (let i = 0; i < this.cellFormats.length; i++) {
+        let cellFormat = this.cellFormats[i];
+
+        range.getCell(cellFormat.row, cellFormat.col).format.fill.color = cellFormat.format.fill.color;
+        range.getCell(cellFormat.row, cellFormat.col).format.font.color = cellFormat.format.font.color;
+        range.getCell(cellFormat.row, cellFormat.col).format.font.strikethrough =
+        cellFormat.format.font.strikethrough;
+      }
+      resultSheet.activate();
+
+      await context.sync();
+    });
   }
 }
 
@@ -244,20 +242,16 @@ function computeLCSLength(list1, list2) {
     .fill()
     .map(() => Array(m + 1).fill(0));
 
-  try {
-    for (let i = 0; i < n + 1; i++) {
-      for (let j = 0; j < m + 1; j++) {
-        if (i === 0 || j === 0) {
-          lcs[i][j] = 0;
-        } else if (compareArrays(list1[i - 1], list2[j - 1])) {
-          lcs[i][j] = 1 + lcs[i - 1][j - 1];
-        } else {
-          lcs[i][j] = Math.max(lcs[i - 1][j], lcs[i][j - 1]);
-        }
+  for (let i = 0; i < n + 1; i++) {
+    for (let j = 0; j < m + 1; j++) {
+      if (i === 0 || j === 0) {
+        lcs[i][j] = 0;
+      } else if (compareArrays(list1[i - 1], list2[j - 1])) {
+        lcs[i][j] = 1 + lcs[i - 1][j - 1];
+      } else {
+        lcs[i][j] = Math.max(lcs[i - 1][j], lcs[i][j - 1]);
       }
     }
-  } catch (error) {
-    console.log(error);
   }
   return lcs;
 }
