@@ -11,6 +11,10 @@ test("diff2D with empty lists", () => {
   let dh = new DiffHandler(list1, list2);
   dh.compute();
 
+  expect(dh.stats.added).toBe(0);
+  expect(dh.stats.modified).toBe(0);
+  expect(dh.stats.removed).toBe(0);
+
   expect(dh.diffs.length).toBe(0);
 });
 
@@ -24,6 +28,10 @@ test("diff2D with empty list1", () => {
 
   let dh = new DiffHandler(list1, list2);
   dh.compute();
+
+  expect(dh.stats.added).toBe(3);
+  expect(dh.stats.modified).toBe(0);
+  expect(dh.stats.removed).toBe(0);
 
   for (let i = 0; i < dh.diffs.length; i++) {
     expect(dh.diffs[i].type).toBe(DiffType.ADDITION);
@@ -41,6 +49,10 @@ test("diff2D with empty list2", () => {
 
   let dh = new DiffHandler(list1, list2);
   dh.compute();
+
+  expect(dh.stats.added).toBe(0);
+  expect(dh.stats.modified).toBe(0);
+  expect(dh.stats.removed).toBe(2);
 
   for (let i = 0; i < dh.diffs.length; i++) {
     expect(dh.diffs[i].type).toBe(DiffType.REMOVAL);
@@ -65,6 +77,10 @@ test("diff2D with identical lists", () => {
 
   let dh = new DiffHandler(list1, list2);
   dh.compute();
+
+  expect(dh.stats.added).toBe(0);
+  expect(dh.stats.modified).toBe(0);
+  expect(dh.stats.removed).toBe(0);
 
   for (let i = 0; i < dh.diffs.length; i++) {
     expect(dh.diffs[i].type).toBe(DiffType.UNCHANGED);
@@ -96,6 +112,10 @@ test("diff2D with identical start and end", () => {
 
   let dh = new DiffHandler(list1, list2);
   dh.compute();
+
+  expect(dh.stats.added).toBe(0);
+  expect(dh.stats.modified).toBe(2);
+  expect(dh.stats.removed).toBe(3);
 
   for (let i = 0; i < dh.diffs.length; i++) {
     if (i <= 1) {
@@ -131,6 +151,10 @@ test("diff2D with differing nr cols", () => {
 
   let dh = new DiffHandler(list1, list2);
   dh.compute();
+
+  expect(dh.stats.added).toBe(1);
+  expect(dh.stats.modified).toBe(3);
+  expect(dh.stats.removed).toBe(1);
 
   for (let i = 0; i < dh.diffs.length; i++) {
     if (i <= 0) {
@@ -168,6 +192,10 @@ test("diff2D with only modifications", () => {
   let dh = new DiffHandler(list1, list2);
   dh.compute();
 
+  expect(dh.stats.added).toBe(0);
+  expect(dh.stats.modified).toBe(5);
+  expect(dh.stats.removed).toBe(0);
+
   for (let i = 0; i < dh.diffs.length; i++) {
     expect(dh.diffs[i].type).toBe(DiffType.MODIFICATION);
   }
@@ -198,6 +226,10 @@ test("diff2D with every other modifications", () => {
 
   let dh = new DiffHandler(list1, list2);
   dh.compute();
+
+  expect(dh.stats.added).toBe(0);
+  expect(dh.stats.modified).toBe(3);
+  expect(dh.stats.removed).toBe(0);
 
   for (let i = 0; i < dh.diffs.length; i++) {
     if (i % 2 == 0) {

@@ -75,6 +75,11 @@ class DiffHandler {
     this.#nrCols = 0;
     this.diffData = [];
     this.cellFormats = [];
+    this.stats = {
+      added: 0,
+      modified: 0,
+      removed: 0,
+    };
   }
 
   get nrRows() {
@@ -89,10 +94,27 @@ class DiffHandler {
     return this.#diffs;
   }
 
+  computeStats() {
+    let added = 0, modified = 0, removed = 0;
+
+    for (let diff of this.diffs) {
+      if (diff.type === DiffType.ADDITION) {
+        added++;
+      } else if (diff.type === DiffType.MODIFICATION) {
+        modified++;
+      } else if (diff.type === DiffType.REMOVAL) {
+        removed++;
+      }
+    }
+    let stats = { added: added, modified: modified, removed: removed };
+    return stats;
+  }
+
   compute() {
     this.#diffs = diff2D(this.list1, this.list2);
     this.#nrRows = this.#diffs.length;
     this.#nrCols = this.calcNrCols();
+    this.stats = this.computeStats();
   }
 
   toString() {

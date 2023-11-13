@@ -4,6 +4,11 @@ let sheet1Selector = document.getElementById("select-1");
 let sheet2Selector = document.getElementById("select-2");
 let sheetNamesOld = [];
 
+let linesStats = document.getElementById("lines-stats")
+let linesAdded = document.getElementById("lines-added");
+let linesModified = document.getElementById("lines-modified");
+let linesRemoved = document.getElementById("lines-removed");
+
 Office.onReady(() => {
   document.getElementById("run-diff").onclick = runDiff;
 
@@ -67,6 +72,14 @@ function resetUI() {
   document.getElementById("run-diff").disabled = false;
 }
 
+function updateUIStats(stats) {
+  linesStats.style.display = 'flex';
+  linesStats.style.hidden = false;
+  linesAdded.innerText = stats.added;
+  linesModified.innerText = stats.modified;
+  linesRemoved.innerText = stats.removed;
+}
+
 function runDiff() {
   Excel.run(async (context) => {
     console.log("-------- RUNNING MAIN DIFF FUNCTION -------");
@@ -102,6 +115,8 @@ function runDiff() {
       // Perform the diff algorithm to get a list of Diffs.
       let diffHandler = new DiffHandler(list1, list2);
       diffHandler.compute();
+
+      updateUIStats(diffHandler.stats);
 
       // Create sheet to display diff.
       // NOTE: Max worksheet name length is 31 chars
