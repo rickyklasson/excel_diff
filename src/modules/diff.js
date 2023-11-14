@@ -55,10 +55,12 @@ const DiffFormat = {
   },
 };
 
-class CellFormat {
-  constructor(row, col, format) {
-    this.row = row;
-    this.col = col;
+class RangeFormat {
+  constructor(startRow, startCol, rowCount, colCount, format) {
+    this.startRow = startRow;
+    this.startCol = startCol;
+    this.colCount = colCount;
+    this.rowCount = rowCount;
     this.format = format;
   }
 }
@@ -70,11 +72,11 @@ class DiffHandler {
   constructor(list1, list2) {
     this.list1 = list1;
     this.list2 = list2;
-    this.#diffs = []
+    this.#diffs = [];
     this.#nrRows = 0;
     this.#nrCols = 0;
     this.diffData = [];
-    this.cellFormats = [];
+    this.rangeFormats = [];
     this.stats = {
       added: 0,
       modified: 0,
@@ -89,13 +91,15 @@ class DiffHandler {
   get nrCols() {
     return this.#nrCols;
   }
-  
+
   get diffs() {
     return this.#diffs;
   }
 
   computeStats() {
-    let added = 0, modified = 0, removed = 0;
+    let added = 0,
+      modified = 0,
+      removed = 0;
 
     for (let diff of this.diffs) {
       if (diff.type === DiffType.ADDITION) {
@@ -166,27 +170,24 @@ class DiffHandler {
   }
 
   setDiffFormat() {
-    this.cellFormats = [];
+    this.rangeFormats = [];
 
     for (let diffIdx = 0; diffIdx < this.#nrRows; diffIdx++) {
       let diff = this.#diffs[diffIdx];
 
-      for (let colIdx = 0; colIdx < this.#nrCols; colIdx++) {
-        let format = null;
-        if (diff.type == DiffType.ADDITION) {
-          format = DiffFormat.ADDITION;
-        } else if (diff.type == DiffType.REMOVAL) {
-          format = DiffFormat.REMOVAL;
-        } else if (diff.type == DiffType.MODIFICATION) {
-          if (diff.before[colIdx] == diff.after[colIdx]) {
-            format = DiffFormat.MODIFICATION_UNCHANGED;
-          } else {
-            format = DiffFormat.MODIFICATION;
-          }
-        }
+      // Compile a list of formats to apply to the resulting sheet. One for each line of ADDITION/REMOVAL/MODIFICATION
+      // and one for each intra-modified cell.
+      if (diff.type == DiffType.ADDITION) {
+        this.rangeFormats.push(new RangeFormat(diffIdx, 0, 1, this.#nrCols, DiffFormat.ADDITION));
+      } else if (diff.type == DiffType.REMOVAL) {
+        this.rangeFormats.push(new RangeFormat(diffIdx, 0, 1, this.#nrCols, DiffFormat.REMOVAL));
+      } else if (diff.type == DiffType.MODIFICATION) {
+        this.rangeFormats.push(new RangeFormat(diffIdx, 0, 1, this.#nrCols, DiffFormat.MODIFICATION_UNCHANGED));
 
-        if (format != null) {
-          this.cellFormats.push(new CellFormat(diffIdx, colIdx, format));
+        for (let colIdx = 0; colIdx < this.#nrCols; colIdx++) {
+          if (diff.before[colIdx] != diff.after[colIdx]) {
+            this.rangeFormats.push(new RangeFormat(diffIdx, colIdx, 1, 1, DiffFormat.MODIFICATION));
+          }
         }
       }
     }
@@ -207,13 +208,18 @@ class DiffHandler {
 
       this.setDiffFormat();
 
-      for (let i = 0; i < this.cellFormats.length; i++) {
-        let cellFormat = this.cellFormats[i];
+      for (let i = 0; i < this.rangeFormats.length; i++) {
+        let rangeFormat = this.rangeFormats[i];
+        let rangeToFormat = resultSheet.getRangeByIndexes(
+          rangeFormat.startRow,
+          rangeFormat.startCol,
+          rangeFormat.rowCount,
+          rangeFormat.colCount,
+        );
 
-        range.getCell(cellFormat.row, cellFormat.col).format.fill.color = cellFormat.format.fill.color;
-        range.getCell(cellFormat.row, cellFormat.col).format.font.color = cellFormat.format.font.color;
-        range.getCell(cellFormat.row, cellFormat.col).format.font.strikethrough =
-          cellFormat.format.font.strikethrough;
+        rangeToFormat.format.fill.color = rangeFormat.format.fill.color;
+        rangeToFormat.format.font.color = rangeFormat.format.font.color;
+        rangeToFormat.format.font.strikethrough = rangeFormat.format.font.strikethrough;
       }
       resultSheet.activate();
 
