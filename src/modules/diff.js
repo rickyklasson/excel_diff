@@ -203,6 +203,7 @@ class DiffHandler {
       this.setDiffData();
       range.values = this.diffData;
       range.format.autofitColumns();
+      await context.sync();
 
       this.setDiffFormat();
 
@@ -212,7 +213,7 @@ class DiffHandler {
         range.getCell(cellFormat.row, cellFormat.col).format.fill.color = cellFormat.format.fill.color;
         range.getCell(cellFormat.row, cellFormat.col).format.font.color = cellFormat.format.font.color;
         range.getCell(cellFormat.row, cellFormat.col).format.font.strikethrough =
-        cellFormat.format.font.strikethrough;
+          cellFormat.format.font.strikethrough;
       }
       resultSheet.activate();
 

@@ -66,6 +66,9 @@ function updateSheetLists() {
 
 function setUIRunning() {
   document.getElementById("run-diff").disabled = true;
+  linesAdded.innerText = '---';
+  linesModified.innerText = '---';
+  linesRemoved.innerText = '---';
 }
 
 function resetUI() {
