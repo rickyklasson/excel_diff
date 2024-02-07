@@ -1,4 +1,4 @@
-import { equalEntries, compareArrays } from "../modules/utils";
+import { equalEntries, compareArrays } from '../modules/utils';
 
 const DiffType = {
   UNCHANGED: 0,
@@ -10,46 +10,46 @@ const DiffType = {
 const DiffFormat = {
   UNCHANGED: {
     fill: {
-      color: "#ffffff",
+      color: '#ffffff',
     },
     font: {
-      color: "#000000",
+      color: '#000000',
       strikethrough: false,
     },
   },
   ADDITION: {
     fill: {
-      color: "#daf5d4",
+      color: '#daf5d4',
     },
     font: {
-      color: "#053d0c",
+      color: '#053d0c',
       strikethrough: false,
     },
   },
   REMOVAL: {
     fill: {
-      color: "#ebcacb",
+      color: '#ebcacb',
     },
     font: {
-      color: "#93141a",
+      color: '#93141a',
       strikethrough: true,
     },
   },
   MODIFICATION_UNCHANGED: {
     fill: {
-      color: "#eaeef6",
+      color: '#eaeef6',
     },
     font: {
-      color: "#000000",
+      color: '#000000',
       strikethrough: false,
     },
   },
   MODIFICATION: {
     fill: {
-      color: "#c3cce3",
+      color: '#c3cce3',
     },
     font: {
-      color: "#142093",
+      color: '#142093',
       strikethrough: false,
     },
   },
@@ -122,7 +122,7 @@ class DiffHandler {
   }
 
   toString() {
-    console.log("---- DIFF ----");
+    console.log('---- DIFF ----');
     for (let i = 0; i < this.#diffs.length; i++) {
       console.log(this.#diffs[i].toString());
     }
@@ -151,7 +151,7 @@ class DiffHandler {
       let diff = this.#diffs[diffIdx];
 
       for (let colIdx = 0; colIdx < this.#nrCols; colIdx++) {
-        let data = "";
+        let data = '';
 
         if (diff.type == DiffType.ADDITION || diff.type == DiffType.MODIFICATION) {
           if (diff.after != null && colIdx < diff.after.length) {
@@ -182,7 +182,9 @@ class DiffHandler {
       } else if (diff.type == DiffType.REMOVAL) {
         this.rangeFormats.push(new RangeFormat(diffIdx, 0, 1, this.#nrCols, DiffFormat.REMOVAL));
       } else if (diff.type == DiffType.MODIFICATION) {
-        this.rangeFormats.push(new RangeFormat(diffIdx, 0, 1, this.#nrCols, DiffFormat.MODIFICATION_UNCHANGED));
+        this.rangeFormats.push(
+          new RangeFormat(diffIdx, 0, 1, this.#nrCols, DiffFormat.MODIFICATION_UNCHANGED)
+        );
 
         for (let colIdx = 0; colIdx < this.#nrCols; colIdx++) {
           if (diff.before[colIdx] != diff.after[colIdx]) {
@@ -198,7 +200,7 @@ class DiffHandler {
       let resultSheet = context.workbook.worksheets.getItem(sheetName);
 
       let range = resultSheet.getRangeByIndexes(0, 0, this.#nrRows, this.#nrCols);
-      range.load(["values"]);
+      range.load(['values']);
       await context.sync();
 
       this.setDiffData();
@@ -357,7 +359,7 @@ function clean_diff_list(diffs) {
       if (d.type == DiffType.ADDITION || d.type == DiffType.REMOVAL) {
         diff_deque.push(d);
       } else {
-        throw new Error("This should never happen. Fix implementation!");
+        throw new Error('This should never happen. Fix implementation!');
       }
     }
   }

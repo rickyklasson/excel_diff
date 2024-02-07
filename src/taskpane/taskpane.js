@@ -1,16 +1,16 @@
-import { DiffHandler } from "../modules/diff";
+import { DiffHandler } from '../modules/diff.js';
 
-let sheet1Selector = document.getElementById("select-1");
-let sheet2Selector = document.getElementById("select-2");
+let sheet1Selector = document.getElementById('select-1');
+let sheet2Selector = document.getElementById('select-2');
 let sheetNamesOld = [];
 
-let linesStats = document.getElementById("lines-stats");
-let linesAdded = document.getElementById("lines-added");
-let linesModified = document.getElementById("lines-modified");
-let linesRemoved = document.getElementById("lines-removed");
+let linesStats = document.getElementById('lines-stats');
+let linesAdded = document.getElementById('lines-added');
+let linesModified = document.getElementById('lines-modified');
+let linesRemoved = document.getElementById('lines-removed');
 
 Office.onReady(() => {
-  document.getElementById("run-diff").onclick = runDiff;
+  document.getElementById('run-diff').onclick = runDiff;
 
   updateSheetLists();
   setInterval(updateSheetLists, 1000);
@@ -22,7 +22,7 @@ function updateSheetLists() {
   Excel.run(async (context) => {
     // Load sheets from workbook.
     let sheets = context.workbook.worksheets;
-    sheets.load("items/name");
+    sheets.load('items/name');
     await context.sync();
 
     let sheetNames = [];
@@ -65,18 +65,18 @@ function updateSheetLists() {
 }
 
 function setUIRunning() {
-  document.getElementById("run-diff").disabled = true;
-  linesAdded.innerText = "---";
-  linesModified.innerText = "---";
-  linesRemoved.innerText = "---";
+  document.getElementById('run-diff').disabled = true;
+  linesAdded.innerText = '---';
+  linesModified.innerText = '---';
+  linesRemoved.innerText = '---';
 }
 
 function resetUI() {
-  document.getElementById("run-diff").disabled = false;
+  document.getElementById('run-diff').disabled = false;
 }
 
 function updateUIStats(stats) {
-  linesStats.style.display = "flex";
+  linesStats.style.display = 'flex';
   linesStats.style.hidden = false;
   linesAdded.innerText = stats.added;
   linesModified.innerText = stats.modified;
@@ -85,7 +85,7 @@ function updateUIStats(stats) {
 
 function runDiff() {
   Excel.run(async (context) => {
-    console.log("-------- RUNNING MAIN DIFF FUNCTION -------");
+    console.log('-------- RUNNING MAIN DIFF FUNCTION -------');
 
     try {
       // Loading indicator
@@ -101,17 +101,17 @@ function runDiff() {
 
       let range1 = sheet1.getUsedRange();
       let range2 = sheet2.getUsedRange();
-      range1.load("values");
-      range2.load("values");
+      range1.load('values');
+      range2.load('values');
       await context.sync();
 
       let list1 = range1.values;
       let list2 = range2.values;
 
-      if (list1.length == 1 && list1[0] == "") {
+      if (list1.length == 1 && list1[0] == '') {
         list1 = [];
       }
-      if (list2.length == 1 && list2[0] == "") {
+      if (list2.length == 1 && list2[0] == '') {
         list2 = [];
       }
 
