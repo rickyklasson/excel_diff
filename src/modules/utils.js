@@ -10,7 +10,7 @@ function compareArrays(a, b) {
     }
   }
   return true;
-};
+}
 
 function equalEntries(a, b) {
   if (Array.isArray(a) && Array.isArray(b)) {
@@ -18,6 +18,6 @@ function equalEntries(a, b) {
   } else {
     return a == b;
   }
-};
+}
 
 export { compareArrays, equalEntries };

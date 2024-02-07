@@ -4,7 +4,7 @@ let sheet1Selector = document.getElementById("select-1");
 let sheet2Selector = document.getElementById("select-2");
 let sheetNamesOld = [];
 
-let linesStats = document.getElementById("lines-stats")
+let linesStats = document.getElementById("lines-stats");
 let linesAdded = document.getElementById("lines-added");
 let linesModified = document.getElementById("lines-modified");
 let linesRemoved = document.getElementById("lines-removed");
@@ -33,7 +33,7 @@ function updateSheetLists() {
     if (JSON.stringify(sheetNames) === JSON.stringify(sheetNamesOld)) {
       return;
     }
-    
+
     let sheet1SelName = sheetNamesOld[sheet1Selector.selectedIndex];
     let sheet2SelName = sheetNamesOld[sheet2Selector.selectedIndex];
 
@@ -44,19 +44,19 @@ function updateSheetLists() {
     while (sheet2Selector.length > 0) {
       sheet2Selector.remove(0);
     }
-      
+
     // Add updated options to selectors.
     sheets.items.forEach((sheet, key) => {
       sheet1Selector[key] = new Option(sheet.name, sheet.name);
       sheet2Selector[key] = new Option(sheet.name, sheet.name);
     });
-    
+
     // Re-assign selection after clearing both lists.
     if (sheetNames.includes(sheet1SelName)) {
-      sheet1Selector.selectedIndex = sheetNames.indexOf(sheet1SelName)
+      sheet1Selector.selectedIndex = sheetNames.indexOf(sheet1SelName);
     }
     if (sheetNames.includes(sheet2SelName)) {
-      sheet2Selector.selectedIndex = sheetNames.indexOf(sheet2SelName)
+      sheet2Selector.selectedIndex = sheetNames.indexOf(sheet2SelName);
     }
 
     sheetNamesOld = [...sheetNames];
@@ -66,9 +66,9 @@ function updateSheetLists() {
 
 function setUIRunning() {
   document.getElementById("run-diff").disabled = true;
-  linesAdded.innerText = '---';
-  linesModified.innerText = '---';
-  linesRemoved.innerText = '---';
+  linesAdded.innerText = "---";
+  linesModified.innerText = "---";
+  linesRemoved.innerText = "---";
 }
 
 function resetUI() {
@@ -76,7 +76,7 @@ function resetUI() {
 }
 
 function updateUIStats(stats) {
-  linesStats.style.display = 'flex';
+  linesStats.style.display = "flex";
   linesStats.style.hidden = false;
   linesAdded.innerText = stats.added;
   linesModified.innerText = stats.modified;
@@ -94,7 +94,7 @@ function runDiff() {
       // Get data from selected excel sheets.
       let sheet1Name = sheet1Selector.options[sheet1Selector.selectedIndex].value;
       let sheet2Name = sheet2Selector.options[sheet2Selector.selectedIndex].value;
-      console.log(`Comparing sheets: ${sheet1Name}  and  ${sheet2Name}`)
+      console.log(`Comparing sheets: ${sheet1Name}  and  ${sheet2Name}`);
 
       let sheet1 = context.workbook.worksheets.getItem(sheet1Name);
       let sheet2 = context.workbook.worksheets.getItem(sheet2Name);
@@ -108,10 +108,10 @@ function runDiff() {
       let list1 = range1.values;
       let list2 = range2.values;
 
-      if (list1.length == 1 && list1[0] == '') {
+      if (list1.length == 1 && list1[0] == "") {
         list1 = [];
       }
-      if (list2.length == 1 && list2[0] == '') {
+      if (list2.length == 1 && list2[0] == "") {
         list2 = [];
       }
 

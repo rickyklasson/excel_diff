@@ -214,7 +214,7 @@ class DiffHandler {
           rangeFormat.startRow,
           rangeFormat.startCol,
           rangeFormat.rowCount,
-          rangeFormat.colCount,
+          rangeFormat.colCount
         );
 
         rangeToFormat.format.fill.color = rangeFormat.format.fill.color;
