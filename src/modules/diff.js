@@ -66,34 +66,19 @@ class RangeFormat {
 }
 
 class DiffHandler {
-  #nrCols;
-  #nrRows;
-  #diffs;
   constructor(list1, list2) {
     this.list1 = list1;
     this.list2 = list2;
-    this.#diffs = [];
-    this.#nrRows = 0;
-    this.#nrCols = 0;
-    this.diffData = [];
+    this.diffs = [];
+    this.nrRows = 0;
+    this.nrCols = 0;
+    this.diffValues = [];
     this.rangeFormats = [];
     this.stats = {
       added: 0,
       modified: 0,
       removed: 0,
     };
-  }
-
-  get nrRows() {
-    return this.#nrRows;
-  }
-
-  get nrCols() {
-    return this.#nrCols;
-  }
-
-  get diffs() {
-    return this.#diffs;
   }
 
   computeStats() {
@@ -115,17 +100,12 @@ class DiffHandler {
   }
 
   compute() {
-    this.#diffs = diff2D(this.list1, this.list2);
-    this.#nrRows = this.#diffs.length;
-    this.#nrCols = this.calcNrCols();
+    this.diffs = diff2D(this.list1, this.list2);
+    this.nrRows = this.diffs.length;
+    this.nrCols = this.calcNrCols();
+    this.diffValues = this.computeDiffValues();
     this.stats = this.computeStats();
-  }
-
-  toString() {
-    console.log('---- DIFF ----');
-    for (let i = 0; i < this.#diffs.length; i++) {
-      console.log(this.#diffs[i].toString());
-    }
+    this.rangeFormats = this.computeRangeFormats();
   }
 
   calcNrCols() {
@@ -143,14 +123,14 @@ class DiffHandler {
     return maxCols;
   }
 
-  setDiffData() {
-    this.diffData = [];
+  computeDiffValues() {
+    let diffValues = [];
 
-    for (let diffIdx = 0; diffIdx < this.#nrRows; diffIdx++) {
+    for (let diffIdx = 0; diffIdx < this.nrRows; diffIdx++) {
       let rowData = [];
-      let diff = this.#diffs[diffIdx];
+      let diff = this.diffs[diffIdx];
 
-      for (let colIdx = 0; colIdx < this.#nrCols; colIdx++) {
+      for (let colIdx = 0; colIdx < this.nrCols; colIdx++) {
         let data = '';
 
         if (diff.type == DiffType.ADDITION || diff.type == DiffType.MODIFICATION) {
@@ -165,68 +145,38 @@ class DiffHandler {
         }
         rowData.push(data);
       }
-      this.diffData.push(rowData);
+      diffValues.push(rowData);
     }
+    return diffValues;
   }
 
-  setDiffFormat() {
-    this.rangeFormats = [];
+  computeRangeFormats() {
+    // TODO: More efficient format ranges, i.e. not one for each cell, but convert into
+    // ranges that span multiple cells/rows.
+    let rangeFormats = [];
 
-    for (let diffIdx = 0; diffIdx < this.#nrRows; diffIdx++) {
-      let diff = this.#diffs[diffIdx];
+    for (let diffIdx = 0; diffIdx < this.nrRows; diffIdx++) {
+      let diff = this.diffs[diffIdx];
 
       // Compile a list of formats to apply to the resulting sheet. One for each line of ADDITION/REMOVAL/MODIFICATION
       // and one for each intra-modified cell.
       if (diff.type == DiffType.ADDITION) {
-        this.rangeFormats.push(new RangeFormat(diffIdx, 0, 1, this.#nrCols, DiffFormat.ADDITION));
+        rangeFormats.push(new RangeFormat(diffIdx, 0, 1, this.nrCols, DiffFormat.ADDITION));
       } else if (diff.type == DiffType.REMOVAL) {
-        this.rangeFormats.push(new RangeFormat(diffIdx, 0, 1, this.#nrCols, DiffFormat.REMOVAL));
+        rangeFormats.push(new RangeFormat(diffIdx, 0, 1, this.nrCols, DiffFormat.REMOVAL));
       } else if (diff.type == DiffType.MODIFICATION) {
-        this.rangeFormats.push(
-          new RangeFormat(diffIdx, 0, 1, this.#nrCols, DiffFormat.MODIFICATION_UNCHANGED)
+        rangeFormats.push(
+          new RangeFormat(diffIdx, 0, 1, this.nrCols, DiffFormat.MODIFICATION_UNCHANGED)
         );
 
-        for (let colIdx = 0; colIdx < this.#nrCols; colIdx++) {
+        for (let colIdx = 0; colIdx < this.nrCols; colIdx++) {
           if (diff.before[colIdx] != diff.after[colIdx]) {
-            this.rangeFormats.push(new RangeFormat(diffIdx, colIdx, 1, 1, DiffFormat.MODIFICATION));
+            rangeFormats.push(new RangeFormat(diffIdx, colIdx, 1, 1, DiffFormat.MODIFICATION));
           }
         }
       }
     }
-  }
-
-  toSheet(sheetName) {
-    Excel.run(async (context) => {
-      let resultSheet = context.workbook.worksheets.getItem(sheetName);
-
-      let range = resultSheet.getRangeByIndexes(0, 0, this.#nrRows, this.#nrCols);
-      range.load(['values']);
-      await context.sync();
-
-      this.setDiffData();
-      range.values = this.diffData;
-      range.format.autofitColumns();
-      await context.sync();
-
-      this.setDiffFormat();
-
-      for (let i = 0; i < this.rangeFormats.length; i++) {
-        let rangeFormat = this.rangeFormats[i];
-        let rangeToFormat = resultSheet.getRangeByIndexes(
-          rangeFormat.startRow,
-          rangeFormat.startCol,
-          rangeFormat.rowCount,
-          rangeFormat.colCount
-        );
-
-        rangeToFormat.format.fill.color = rangeFormat.format.fill.color;
-        rangeToFormat.format.font.color = rangeFormat.format.font.color;
-        rangeToFormat.format.font.strikethrough = rangeFormat.format.font.strikethrough;
-      }
-      resultSheet.activate();
-
-      await context.sync();
-    });
+    return rangeFormats;
   }
 }
 
