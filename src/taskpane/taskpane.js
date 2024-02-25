@@ -50,7 +50,8 @@ class ExcelHandler {
   }
 
   static async diffValuesToSheet(diffHandler, sheetName) {
-    console.log('diffValuesToSheet()');
+    console.log(`diffValuesToSheet() -> Writing ${diffHandler.nrCols * diffHandler.nrRows} cells`);
+    console.time('ExcelHandler.diffValuesToSheet');
     await Excel.run(async (context) => {
       let resultSheet = context.workbook.worksheets.getItem(sheetName);
       let range = resultSheet.getRangeByIndexes(0, 0, diffHandler.nrRows, diffHandler.nrCols);
@@ -64,10 +65,12 @@ class ExcelHandler {
       range.format.autofitColumns();
       await context.sync();
     });
+    console.timeEnd('ExcelHandler.diffValuesToSheet');
   }
 
   static async diffFormatToSheet(diffHandler, sheetName) {
-    console.log('diffFormatToSheet()');
+    console.log(`diffFormatToSheet() -> Applying ${diffHandler.rangeFormats.length} formats`);
+    console.time('ExcelHandler.diffFormatToSheet');
     await Excel.run(async (context) => {
       let resultSheet = context.workbook.worksheets.getItem(sheetName);
       // Write range formats to cells.
@@ -88,6 +91,7 @@ class ExcelHandler {
       resultSheet.activate();
       await context.sync();
     });
+    console.timeEnd('ExcelHandler.diffFormatToSheet');
   }
 }
 
@@ -207,6 +211,7 @@ class App {
   }
 
   async runDiff() {
+    console.time('runDiff');
     await Excel.run(async (context) => {
       console.log('runDiff()');
 
@@ -231,8 +236,8 @@ class App {
         // Create sheet for diffs and write diff values and format to sheet.
         let diffSheetName = await ExcelHandler.createSheet(userConfig, this.UIHandler.sheetNames);
 
-        ExcelHandler.diffValuesToSheet(diffHandler, diffSheetName);
-        ExcelHandler.diffFormatToSheet(diffHandler, diffSheetName);
+        await ExcelHandler.diffValuesToSheet(diffHandler, diffSheetName);
+        await ExcelHandler.diffFormatToSheet(diffHandler, diffSheetName);
 
         await context.sync();
       } catch (err) {
@@ -241,6 +246,7 @@ class App {
         this.UIHandler.setUIIdle();
       }
     });
+    console.timeEnd('runDiff');
   }
 }
 

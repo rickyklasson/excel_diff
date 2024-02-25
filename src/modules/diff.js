@@ -100,12 +100,16 @@ class DiffHandler {
   }
 
   compute() {
+    console.time('DiffHandler.compute');
+
     this.diffs = diff2D(this.list1, this.list2);
     this.nrRows = this.diffs.length;
     this.nrCols = this.calcNrCols();
     this.diffValues = this.computeDiffValues();
     this.stats = this.computeStats();
     this.rangeFormats = this.computeRangeFormats();
+
+    console.timeEnd('DiffHandler.compute');
   }
 
   calcNrCols() {
