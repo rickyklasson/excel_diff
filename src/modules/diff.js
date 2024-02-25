@@ -241,7 +241,7 @@ function computeLCSLength(list1, list2) {
   return lcs;
 }
 
-function trimEqualEntries(list1, list2) {
+function getEqualEntries(list1, list2) {
   // Compares the lists for equals entries at start and end. These entries can then be directly
   // added to the list of diffs and do not need to be part of the LCS calculation.
 
@@ -280,57 +280,58 @@ function trimEqualEntries(list1, list2) {
 }
 
 function clean_diff_list(diffs) {
-  let diff_clean = [];
-  let diff_deque = [];
+  // Replace ADDITION-REMOVAL pair with MODIFICATION.
+  let diffClean = [];
+  let diffDeque = [];
 
   for (let i = 0; i < diffs.length; i++) {
     let d = diffs[i];
 
-    // New chunk, copy deque to cleaned list and move on to next iteration.
     if (d.type === DiffType.UNCHANGED) {
-      diff_clean = diff_clean.concat(diff_deque);
-      diff_clean.push(d);
-      diff_deque = [];
+      // New chunk, copy deque to cleaned list and move on to next iteration.
+      diffClean = diffClean.concat(diffDeque);
+      diffClean.push(d);
+      diffDeque = [];
       continue;
     }
 
-    if (diff_deque.length) {
-      let top_diff = diff_deque[0];
+    if (diffDeque.length) {
+      let top_diff = diffDeque[0];
 
       if (d.type == DiffType.ADDITION && top_diff.type == DiffType.REMOVAL) {
         let diff_mod = new Diff(DiffType.MODIFICATION, top_diff.before, d.after);
-        diff_clean.push(diff_mod);
-        diff_deque.shift();
+        diffClean.push(diff_mod);
+        diffDeque.shift();
       } else if (d.type == DiffType.REMOVAL && top_diff.type == DiffType.ADDITION) {
         let diff_mod = new Diff(DiffType.MODIFICATION, d.before, top_diff.after);
-        diff_clean.push(diff_mod);
-        diff_deque.shift();
+        diffClean.push(diff_mod);
+        diffDeque.shift();
       } else {
         // Same type as in deque, push to it.
-        diff_deque.push(d);
+        diffDeque.push(d);
       }
     } else {
       if (d.type == DiffType.ADDITION || d.type == DiffType.REMOVAL) {
-        diff_deque.push(d);
+        diffDeque.push(d);
       } else {
-        throw new Error('This should never happen. Fix implementation!');
+        throw new Error('Added diff of type MODIFICATION to diff_deque. This should never happen.');
       }
     }
   }
 
-  if (diff_deque.length > 0) {
-    diff_clean = diff_clean.concat(diff_deque);
+  if (diffDeque.length > 0) {
+    diffClean = diffClean.concat(diffDeque);
   }
 
-  return diff_clean;
+  return diffClean;
 }
 
 function diff1D(list1, list2) {
   let diffs = [];
 
-  const [diffsStart, diffsEnd] = trimEqualEntries(list1, list2);
+  const [diffsStart, diffsEnd] = getEqualEntries(list1, list2);
 
-  // Actually trim the lists before performing the rest of the algorithm.
+  // Trim the lists before performing the rest of the algorithm.
   list1 = list1.slice(diffsStart.length, diffsEnd.length ? -diffsEnd.length : list1.length);
   list2 = list2.slice(diffsStart.length, diffsEnd.length ? -diffsEnd.length : list2.length);
 
