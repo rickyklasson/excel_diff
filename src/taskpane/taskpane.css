@@ -516,6 +516,10 @@ select {
   visibility: visible;
 }
 
+.static {
+  position: static;
+}
+
 .relative {
   position: relative;
 }
@@ -574,6 +578,10 @@ select {
 
 .w-\[200px\] {
   width: 200px;
+}
+
+.min-w-full {
+  min-width: 100%;
 }
 
 .max-w-sm {
@@ -651,6 +659,10 @@ select {
   border-radius: 9999px;
 }
 
+.rounded-lg {
+  border-radius: 0.5rem;
+}
+
 .border-\[1px\] {
   border-width: 1px;
 }
@@ -703,11 +715,6 @@ select {
   background-color: rgb(255 255 255 / var(--tw-bg-opacity));
 }
 
-.bg-\[\#107c41\] {
-  --tw-bg-opacity: 1;
-  background-color: rgb(16 124 65 / var(--tw-bg-opacity));
-}
-
 .bg-green-400 {
   --tw-bg-opacity: 1;
   background-color: rgb(74 222 128 / var(--tw-bg-opacity));
@@ -726,6 +733,16 @@ select {
 .bg-red-200 {
   --tw-bg-opacity: 1;
   background-color: rgb(254 202 202 / var(--tw-bg-opacity));
+}
+
+.bg-red-600 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(220 38 38 / var(--tw-bg-opacity));
+}
+
+.bg-\[\#107c41\] {
+  --tw-bg-opacity: 1;
+  background-color: rgb(16 124 65 / var(--tw-bg-opacity));
 }
 
 .p-2 {
@@ -765,6 +782,11 @@ select {
 .py-2 {
   padding-top: 0.5rem;
   padding-bottom: 0.5rem;
+}
+
+.px-4 {
+  padding-left: 1rem;
+  padding-right: 1rem;
 }
 
 .text-lg {
@@ -842,6 +864,11 @@ select {
 .text-green-700 {
   --tw-text-opacity: 1;
   color: rgb(21 128 61 / var(--tw-text-opacity));
+}
+
+.text-green-400 {
+  --tw-text-opacity: 1;
+  color: rgb(74 222 128 / var(--tw-text-opacity));
 }
 
 .underline {

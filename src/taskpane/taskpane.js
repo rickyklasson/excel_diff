@@ -61,6 +61,7 @@ class ExcelHandler {
       // TODO: Copy column widths of second compared sheet.
       // Write diff values to sheet.
       range.values = diffHandler.diffValues;
+      range.format.autofitColumns();
       await context.sync();
     });
   }

@@ -7,7 +7,10 @@
     <title>Excel Diff Add-in</title>
 
     <!-- Office JavaScript API -->
-    <script type="text/javascript" src="https://appsforoffice.microsoft.com/lib/1.1/hosted/office.js"></script>
+    <script
+      type="text/javascript"
+      src="https://appsforoffice.microsoft.com/lib/1.1/hosted/office.js"
+    ></script>
 
     <!-- For more information on Fluent UI, visit https://developer.microsoft.com/fluentui#/. -->
     <link
@@ -26,21 +29,29 @@
       <select title="select-1" name="select-1" id="select-1"></select>
       <!-- Selection for sheet 2 -->
       <select title="select-2" name="select-2" id="select-2"></select>
-      <button id="run-diff" type="button" class="bg-[#107c41] font-semibold text-md text-white rounded-md w-[200px] py-3 my-4 mx-auto transition-colors ease-in-out disabled:bg-gray-400 disabled:animate-[pulse_2s_ease-in-out_infinite]">
+      <button
+        id="run-diff"
+        type="button"
+        class="bg-[#107c41] font-semibold text-md text-white rounded-md w-[200px] py-3 my-4 mx-auto transition-colors ease-in-out disabled:bg-gray-400 disabled:animate-[pulse_2s_ease-in-out_infinite]"
+      >
         Run Diff
       </button>
-      
+
       <hr />
       <div id="lines-stats" class="hidden flex-col">
-        <div class="text-green-700">
-          <span id="lines-added" class="text-2xl semi-bold">12 </span> <span class="text-lg font-light">&nbsp;line(s) added</span>
+        <div class="text-green-400">
+          <span id="lines-added" class="text-2xl semi-bold">12 </span>
+          <span class="text-lg font-light">&nbsp;line(s) added</span>
         </div>
         <div class="text-blue-600">
-          <span id="lines-modified" class="text-2xl semi-bold">12 </span> <span class="text-lg font-light">&nbsp;line(s) modified</span>
+          <span id="lines-modified" class="text-2xl semi-bold">12 </span>
+          <span class="text-lg font-light">&nbsp;line(s) modified</span>
         </div>
         <div class="text-red-600">
-          <span id="lines-removed" class="text-2xl semi-bold">12 </span> <span class="text-lg font-light">&nbsp;line(s) removed</span>
+          <span id="lines-removed" class="text-2xl semi-bold">12 </span>
+          <span class="text-lg font-light">&nbsp;line(s) removed</span>
         </div>
+      </div>
     </div>
   </body>
 </html>
