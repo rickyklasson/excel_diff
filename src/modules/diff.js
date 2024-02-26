@@ -117,7 +117,9 @@ class DiffHandler {
   constructor(list1, list2, userConfig) {
     this.list1 = list1;
     this.list2 = list2;
+    this.userConfig = userConfig;
     this.diffs = [];
+    this.collapsibleRowRanges = []; // List of row pairs: [[startRow, endRow], ..] that are unchanged and can be collapsed.
     this.nrRows = 0;
     this.nrCols = 0;
     this.diffValues = [];
@@ -155,6 +157,7 @@ class DiffHandler {
     this.diffs = diff2D(this.list1, this.list2);
     this.nrRows = this.diffs.length;
     this.nrCols = this.calcNrCols();
+    this.collapsibleRowRanges = this.userConfig['collapse'] ? this.computeCollapsibleRows() : [];
     this.diffValues = this.computeDiffValues();
     this.stats = this.computeStats();
     this.rangeFormats = this.computeRangeFormats();
@@ -175,6 +178,29 @@ class DiffHandler {
       }
     }
     return maxCols;
+  }
+
+  computeCollapsibleRows() {
+    const MINCOLLAPSEROWS = 10;
+    const COLLAPSEMARGIN = 2;
+    let collapsibleRowRanges = [];
+    let collapseStart = 1;
+    let collapseEnd = null;
+
+    let rowIdx = 1; // Excel ranges start at row 1 (not 0).
+    for (let d of this.diffs) {
+      if (d.type != DiffType.UNCHANGED || rowIdx == this.diffs.length - 1) {
+        // End of collapsible segment.
+        collapseEnd = rowIdx - 1;
+        if (collapseEnd > collapseStart + MINCOLLAPSEROWS) {
+          // Push [startRow, endRow] with margins on either side to the collapsibleRowRanges list.
+          collapsibleRowRanges.push([collapseStart + COLLAPSEMARGIN, collapseEnd - COLLAPSEMARGIN]);
+        }
+        collapseStart = rowIdx + 1;
+      }
+      rowIdx++;
+    }
+    return collapsibleRowRanges;
   }
 
   computeDiffValues() {
@@ -205,8 +231,6 @@ class DiffHandler {
   }
 
   computeRangeFormats() {
-    // TODO: More efficient format ranges, i.e. not one for each cell, but convert into
-    // ranges that span multiple cells/rows.
     let rangeFormats = [];
 
     for (let diffIdx = 0; diffIdx < this.nrRows; diffIdx++) {
@@ -329,7 +353,7 @@ function getEqualEntries(list1, list2) {
   return [diffsStart, diffsEnd];
 }
 
-function clean_diff_list(diffs) {
+function cleanDiffList(diffs) {
   // Replace ADDITION-REMOVAL pair with MODIFICATION.
   let diffClean = [];
   let diffDeque = [];
@@ -433,7 +457,7 @@ function diff1D(list1, list2) {
 function diff2D(list1, list2) {
   let diffs = diff1D(list1, list2);
 
-  diffs = clean_diff_list(diffs);
+  diffs = cleanDiffList(diffs);
 
   for (let d of diffs) {
     d.calculateSubDiff();

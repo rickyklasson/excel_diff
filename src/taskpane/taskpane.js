@@ -88,10 +88,25 @@ class ExcelHandler {
         rangeToFormat.format.font.strikethrough = rangeFormat.format.font.strikethrough;
       }
 
-      resultSheet.activate();
       await context.sync();
     });
     console.timeEnd('ExcelHandler.diffFormatToSheet');
+  }
+
+  static async collapseRows(diffHandler, sheetName) {
+    console.log(`collapseRows()`);
+    console.time('ExcelHandler.collapseRows');
+    await Excel.run(async (context) => {
+      let resultSheet = context.workbook.worksheets.getItem(sheetName);
+      // Write range formats to cells.
+      for (let [rowStart, rowEnd] of diffHandler.collapsibleRowRanges) {
+        resultSheet.getRange(`${rowStart}:${rowEnd}`).rowHidden = true;
+      }
+
+      resultSheet.activate();
+      await context.sync();
+    });
+    console.timeEnd('ExcelHandler.collapseRows');
   }
 }
 
@@ -104,6 +119,7 @@ class UIHandler {
 
     // Checkboxes.
     this.checkboxColorblind = document.getElementById('diff-colorblind');
+    this.checkboxCollapse = document.getElementById('diff-collapse');
 
     this.updateSheetLists = this.updateSheetLists.bind(this);
     this.updateSheetLists();
@@ -122,6 +138,7 @@ class UIHandler {
     config['sheet1Name'] = this.selector1.value;
     config['sheet2Name'] = this.selector2.value;
     config['colorblind'] = this.checkboxColorblind.checked;
+    config['collapse'] = this.checkboxCollapse.checked;
 
     return config;
   }
@@ -242,6 +259,7 @@ class App {
 
         await ExcelHandler.diffValuesToSheet(diffHandler, diffSheetName);
         await ExcelHandler.diffFormatToSheet(diffHandler, diffSheetName);
+        await ExcelHandler.collapseRows(diffHandler, diffSheetName);
 
         await context.sync();
       } catch (err) {
