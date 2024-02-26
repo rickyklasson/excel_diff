@@ -1,14 +1,14 @@
-import { DiffHandler, diff2D, DiffType } from "../src/modules/diff";
+import { DiffHandler, DiffType } from '../src/modules/diff';
 
-test("Dummy test", () => {
+test('Dummy test', () => {
   expect(1).toBe(1);
 });
 
-test("diff2D with empty lists", () => {
+test('diff2D with empty lists', () => {
   let list1 = [];
   let list2 = [];
 
-  let dh = new DiffHandler(list1, list2);
+  let dh = new DiffHandler(list1, list2, { colorblind: false });
   dh.compute();
 
   expect(dh.stats.added).toBe(0);
@@ -18,15 +18,15 @@ test("diff2D with empty lists", () => {
   expect(dh.diffs.length).toBe(0);
 });
 
-test("diff2D with empty list1", () => {
+test('diff2D with empty list1', () => {
   let list1 = [];
   let list2 = [
     [1, 2, 3, 4],
-    ["a", "b", "c", "d"],
+    ['a', 'b', 'c', 'd'],
     [5, 6, 7, 8],
   ];
 
-  let dh = new DiffHandler(list1, list2);
+  let dh = new DiffHandler(list1, list2, { colorblind: false });
   dh.compute();
 
   expect(dh.stats.added).toBe(3);
@@ -40,14 +40,14 @@ test("diff2D with empty list1", () => {
   expect(dh.diffs.length).toBe(3);
 });
 
-test("diff2D with empty list2", () => {
+test('diff2D with empty list2', () => {
   let list1 = [
-    ["a", "b", "c", "d"],
+    ['a', 'b', 'c', 'd'],
     [5, 6, 7, 8],
   ];
   let list2 = [];
 
-  let dh = new DiffHandler(list1, list2);
+  let dh = new DiffHandler(list1, list2, { colorblind: false });
   dh.compute();
 
   expect(dh.stats.added).toBe(0);
@@ -61,21 +61,21 @@ test("diff2D with empty list2", () => {
   expect(dh.diffs.length).toBe(2);
 });
 
-test("diff2D with identical lists", () => {
+test('diff2D with identical lists', () => {
   let list1 = [
-    ["a1ias", "b", "c", "d"],
-    ["a", "b", "c", "123j"],
-    [8992, 12, "io1n2c", "dakpisj"],
+    ['a1ias', 'b', 'c', 'd'],
+    ['a', 'b', 'c', '123j'],
+    [8992, 12, 'io1n2c', 'dakpisj'],
     [5, 6, 7, 811],
   ];
   let list2 = [
-    ["a1ias", "b", "c", "d"],
-    ["a", "b", "c", "123j"],
-    [8992, 12, "io1n2c", "dakpisj"],
+    ['a1ias', 'b', 'c', 'd'],
+    ['a', 'b', 'c', '123j'],
+    [8992, 12, 'io1n2c', 'dakpisj'],
     [5, 6, 7, 811],
   ];
 
-  let dh = new DiffHandler(list1, list2);
+  let dh = new DiffHandler(list1, list2, { colorblind: false });
   dh.compute();
 
   expect(dh.stats.added).toBe(0);
@@ -89,28 +89,28 @@ test("diff2D with identical lists", () => {
   expect(dh.diffs.length).toBe(4);
 });
 
-test("diff2D with identical start and end", () => {
+test('diff2D with identical start and end', () => {
   let list1 = [
-    ["a1ias", "b", "c", "d"],
-    ["a", "b", "c", "123j"],
+    ['a1ias', 'b', 'c', 'd'],
+    ['a', 'b', 'c', '123j'],
     ['uajsd'],
     ['uajsd'],
     ['uajsd'],
     ['uajsd'],
     ['uajsd'],
-    [8992, 12, "io1n2c", "dakpisj"],
+    [8992, 12, 'io1n2c', 'dakpisj'],
     [5, 6, 7, 811],
   ];
   let list2 = [
-    ["a1ias", "b", "c", "d"],
-    ["a", "b", "c", "123j"],
+    ['a1ias', 'b', 'c', 'd'],
+    ['a', 'b', 'c', '123j'],
     ['uajs12a'],
     ['uajs12a'],
-    [8992, 12, "io1n2c", "dakpisj"],
+    [8992, 12, 'io1n2c', 'dakpisj'],
     [5, 6, 7, 811],
   ];
 
-  let dh = new DiffHandler(list1, list2);
+  let dh = new DiffHandler(list1, list2, { colorblind: false });
   dh.compute();
 
   expect(dh.stats.added).toBe(0);
@@ -120,8 +120,7 @@ test("diff2D with identical start and end", () => {
   for (let i = 0; i < dh.diffs.length; i++) {
     if (i <= 1) {
       expect(dh.diffs[i].type).toBe(DiffType.UNCHANGED);
-    }
-    else if (i <= 3) {
+    } else if (i <= 3) {
       expect(dh.diffs[i].type).toBe(DiffType.MODIFICATION);
     } else if (i <= 6) {
       expect(dh.diffs[i].type).toBe(DiffType.REMOVAL);
@@ -133,14 +132,8 @@ test("diff2D with identical start and end", () => {
   expect(dh.diffs.length).toBe(9);
 });
 
-test("diff2D with differing nr cols", () => {
-  let list1 = [
-    [1],
-    [1, 2],
-    [1, 2, 3],
-    [1, 2, 3, 4],
-    [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13],
-  ];
+test('diff2D with differing nr cols', () => {
+  let list1 = [[1], [1, 2], [1, 2, 3], [1, 2, 3, 4], [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]];
   let list2 = [
     [1, 2],
     [3, 4],
@@ -149,7 +142,7 @@ test("diff2D with differing nr cols", () => {
     [9, 10],
   ];
 
-  let dh = new DiffHandler(list1, list2);
+  let dh = new DiffHandler(list1, list2, { colorblind: false });
   dh.compute();
 
   expect(dh.stats.added).toBe(1);
@@ -159,8 +152,7 @@ test("diff2D with differing nr cols", () => {
   for (let i = 0; i < dh.diffs.length; i++) {
     if (i <= 0) {
       expect(dh.diffs[i].type).toBe(DiffType.REMOVAL);
-    }
-    else if (i <= 1) {
+    } else if (i <= 1) {
       expect(dh.diffs[i].type).toBe(DiffType.UNCHANGED);
     } else if (i <= 4) {
       expect(dh.diffs[i].type).toBe(DiffType.MODIFICATION);
@@ -173,14 +165,8 @@ test("diff2D with differing nr cols", () => {
   expect(dh.diffs.length).toBe(6);
 });
 
-test("diff2D with only modifications", () => {
-  let list1 = [
-    [1],
-    [1, 2],
-    [1, 2, 3],
-    [1, 2, 3, 4],
-    [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13],
-  ];
+test('diff2D with only modifications', () => {
+  let list1 = [[1], [1, 2], [1, 2, 3], [1, 2, 3, 4], [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]];
   let list2 = [
     [1, 3],
     [3, 4],
@@ -189,7 +175,7 @@ test("diff2D with only modifications", () => {
     [9, 10],
   ];
 
-  let dh = new DiffHandler(list1, list2);
+  let dh = new DiffHandler(list1, list2, { colorblind: false });
   dh.compute();
 
   expect(dh.stats.added).toBe(0);
@@ -204,7 +190,7 @@ test("diff2D with only modifications", () => {
   expect(dh.diffs.length).toBe(5);
 });
 
-test("diff2D with every other modifications", () => {
+test('diff2D with every other modifications', () => {
   let list1 = [
     [1],
     [1, 2],
@@ -224,7 +210,7 @@ test("diff2D with every other modifications", () => {
     [6, 7, 8, 9],
   ];
 
-  let dh = new DiffHandler(list1, list2);
+  let dh = new DiffHandler(list1, list2, { colorblind: false });
   dh.compute();
 
   expect(dh.stats.added).toBe(0);

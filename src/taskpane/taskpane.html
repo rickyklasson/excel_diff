@@ -23,12 +23,17 @@
   </head>
 
   <body class="ms-font-m ms-Fabric bg-white">
-    <div class="max-w-sm flex flex-col mx-auto py-6 gap-4 px-6">
+    <div class="max-w-sm flex flex-col mx-auto py-6 gap-2 px-6">
       <!-- Selection for sheet 1 -->
-      <h4 class="font-semibold text-3xl mb-2">Compare sheets</h4>
+      <h4 class="font-semibold text-3xl mb-2">Settings</h4>
       <select title="select-1" name="select-1" id="select-1"></select>
       <!-- Selection for sheet 2 -->
       <select title="select-2" name="select-2" id="select-2"></select>
+      <div>
+        <input type="checkbox" id="diff-colorblind" name="diff-colorblind" />
+        <label for="diff-colorblind">Colorblind mode</label>
+      </div>
+
       <button
         id="run-diff"
         type="button"

@@ -7,7 +7,7 @@ const DiffType = {
   MODIFICATION: 3,
 };
 
-const DiffFormat = {
+const DiffFormatDefault = {
   UNCHANGED: {
     fill: {
       color: '#ffffff',
@@ -55,6 +55,54 @@ const DiffFormat = {
   },
 };
 
+const DiffFormatColorblind = {
+  UNCHANGED: {
+    fill: {
+      color: '#ffffff',
+    },
+    font: {
+      color: '#000000',
+      strikethrough: false,
+    },
+  },
+  ADDITION: {
+    fill: {
+      color: '#9df0ff',
+    },
+    font: {
+      color: '#13282b',
+      strikethrough: false,
+    },
+  },
+  REMOVAL: {
+    fill: {
+      color: '#ff8db5',
+    },
+    font: {
+      color: '#61102d',
+      strikethrough: true,
+    },
+  },
+  MODIFICATION_UNCHANGED: {
+    fill: {
+      color: '#ffefa8',
+    },
+    font: {
+      color: '#000000',
+      strikethrough: false,
+    },
+  },
+  MODIFICATION: {
+    fill: {
+      color: '#ffbc6a',
+    },
+    font: {
+      color: '#100c07',
+      strikethrough: false,
+    },
+  },
+};
+
 class RangeFormat {
   constructor(startRow, startCol, rowCount, colCount, format) {
     this.startRow = startRow;
@@ -66,7 +114,7 @@ class RangeFormat {
 }
 
 class DiffHandler {
-  constructor(list1, list2) {
+  constructor(list1, list2, userConfig) {
     this.list1 = list1;
     this.list2 = list2;
     this.diffs = [];
@@ -79,6 +127,8 @@ class DiffHandler {
       modified: 0,
       removed: 0,
     };
+
+    this.diffFormat = userConfig['colorblind'] ? DiffFormatColorblind : DiffFormatDefault;
   }
 
   computeStats() {
@@ -165,17 +215,17 @@ class DiffHandler {
       // Compile a list of formats to apply to the resulting sheet. One for each line of ADDITION/REMOVAL/MODIFICATION
       // and one for each intra-modified cell.
       if (diff.type == DiffType.ADDITION) {
-        rangeFormats.push(new RangeFormat(diffIdx, 0, 1, this.nrCols, DiffFormat.ADDITION));
+        rangeFormats.push(new RangeFormat(diffIdx, 0, 1, this.nrCols, this.diffFormat.ADDITION));
       } else if (diff.type == DiffType.REMOVAL) {
-        rangeFormats.push(new RangeFormat(diffIdx, 0, 1, this.nrCols, DiffFormat.REMOVAL));
+        rangeFormats.push(new RangeFormat(diffIdx, 0, 1, this.nrCols, this.diffFormat.REMOVAL));
       } else if (diff.type == DiffType.MODIFICATION) {
         rangeFormats.push(
-          new RangeFormat(diffIdx, 0, 1, this.nrCols, DiffFormat.MODIFICATION_UNCHANGED)
+          new RangeFormat(diffIdx, 0, 1, this.nrCols, this.diffFormat.MODIFICATION_UNCHANGED)
         );
 
         for (let colIdx = 0; colIdx < this.nrCols; colIdx++) {
           if (diff.before[colIdx] != diff.after[colIdx]) {
-            rangeFormats.push(new RangeFormat(diffIdx, colIdx, 1, 1, DiffFormat.MODIFICATION));
+            rangeFormats.push(new RangeFormat(diffIdx, colIdx, 1, 1, this.diffFormat.MODIFICATION));
           }
         }
       }

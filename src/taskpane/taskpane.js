@@ -102,6 +102,9 @@ class UIHandler {
     this.selector2 = document.getElementById('select-2');
     this.sheetNames = [];
 
+    // Checkboxes.
+    this.checkboxColorblind = document.getElementById('diff-colorblind');
+
     this.updateSheetLists = this.updateSheetLists.bind(this);
     this.updateSheetLists();
     setInterval(this.updateSheetLists, 1000);
@@ -118,6 +121,7 @@ class UIHandler {
     // Can also be selected by: this.selector1.options[this.selector1.selectedIndex].value
     config['sheet1Name'] = this.selector1.value;
     config['sheet2Name'] = this.selector2.value;
+    config['colorblind'] = this.checkboxColorblind.checked;
 
     return config;
   }
@@ -227,7 +231,7 @@ class App {
         let [sheet1Values, sheet2Values] = await ExcelHandler.getSheetValues(userConfig);
 
         // Perform the diff algorithm to get a list of Diffs.
-        let diffHandler = new DiffHandler(sheet1Values, sheet2Values);
+        let diffHandler = new DiffHandler(sheet1Values, sheet2Values, userConfig);
 
         diffHandler.compute();
 
