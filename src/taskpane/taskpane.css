@@ -851,11 +851,6 @@ select > option:focus {
   background-color: rgb(254 243 199 / var(--tw-bg-opacity));
 }
 
-.bg-\[\#107c41\] {
-  --tw-bg-opacity: 1;
-  background-color: rgb(16 124 65 / var(--tw-bg-opacity));
-}
-
 .bg-emerald-500 {
   --tw-bg-opacity: 1;
   background-color: rgb(16 185 129 / var(--tw-bg-opacity));
@@ -1132,6 +1127,11 @@ select > option:focus {
 .text-emerald-800 {
   --tw-text-opacity: 1;
   color: rgb(6 95 70 / var(--tw-text-opacity));
+}
+
+.text-red-700 {
+  --tw-text-opacity: 1;
+  color: rgb(185 28 28 / var(--tw-text-opacity));
 }
 
 .underline {
