@@ -130,6 +130,9 @@ class UIHandler {
     this.linesAdded = document.getElementById('lines-added');
     this.linesModified = document.getElementById('lines-modified');
     this.linesRemoved = document.getElementById('lines-removed');
+
+    // Warning field
+    this.warning = document.getElementById('warning');
   }
 
   getUserConfig() {
@@ -148,6 +151,8 @@ class UIHandler {
     this.linesAdded.innerText = '---';
     this.linesModified.innerText = '---';
     this.linesRemoved.innerText = '---';
+
+    this.warning.style.display = 'none';
   }
 
   setUIIdle() {
@@ -159,10 +164,14 @@ class UIHandler {
     console.log(stats);
 
     this.linesStats.style.display = 'flex';
-    this.linesStats.style.hidden = false;
     this.linesAdded.innerText = stats.added;
     this.linesModified.innerText = stats.modified;
     this.linesRemoved.innerText = stats.removed;
+  }
+
+  setUIWarning(msg) {
+    this.warning.innerHTML = msg;
+    this.warning.style.display = 'flex';
   }
 
   updateSheetLists() {
@@ -246,6 +255,14 @@ class App {
         console.log(userConfig);
 
         let [sheet1Values, sheet2Values] = await ExcelHandler.getSheetValues(userConfig);
+        if (sheet1Values.length == 0 || sheet2Values.length == 0) {
+          this.UIHandler.setUIWarning('One or more empty sheets selected. No diff generated.');
+          return;
+        } else if (sheet1Values[0].length != sheet2Values[0].length) {
+          this.UIHandler.setUIWarning(
+            'Comparing sheets with different number of columns likely takes extra time and may not yield useful results.'
+          );
+        }
 
         // Perform the diff algorithm to get a list of Diffs.
         let diffHandler = new DiffHandler(sheet1Values, sheet2Values, userConfig);
