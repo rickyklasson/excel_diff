@@ -25,46 +25,58 @@
   <body class="ms-font-m ms-Fabric bg-white">
     <div class="max-w-sm flex flex-col mx-auto py-6 gap-2 px-6">
       <!-- Selection for sheet 1 -->
-      <h4 class="font-semibold text-3xl mb-2">Settings</h4>
+      <h4 class="font-light text-3xl mb-2 text-emerald-800 tracking-wide">Diff Configuration</h4>
       <select title="select-1" name="select-1" id="select-1"></select>
       <!-- Selection for sheet 2 -->
       <select title="select-2" name="select-2" id="select-2"></select>
       <div>
         <div>
-          <input type="checkbox" id="diff-colorblind" name="diff-colorblind" />
-          <label for="diff-colorblind">Colorblind mode</label>
+          <input
+            type="checkbox"
+            id="diff-colorblind"
+            name="diff-colorblind"
+            class="accent-emerald-600"
+          />
+          <label for="diff-colorblind" class="px-1">Colorblind mode</label>
         </div>
         <div>
-          <input type="checkbox" id="diff-collapse" name="diff-collapse" />
-          <label for="diff-collapse">Collapse unchanged rows</label>
+          <input
+            type="checkbox"
+            id="diff-collapse"
+            name="diff-collapse"
+            class="accent-emerald-600"
+          />
+          <label for="diff-collapse" class="px-1">Collapse unchanged rows</label>
         </div>
       </div>
 
       <button
         id="run-diff"
         type="button"
-        class="bg-[#107c41] font-semibold text-md text-white rounded-md w-[200px] py-3 my-4 mx-auto transition-colors ease-in-out disabled:bg-gray-400 disabled:animate-[pulse_2s_ease-in-out_infinite]"
+        class="bg-emerald-800 font-semibold text-lg text-white rounded-md w-[200px] py-3 my-4 mx-auto tracking-widest transition-colors ease-in-out disabled:bg-gray-400 disabled:animate-[pulse_2s_ease-in-out_infinite]"
       >
         Run Diff
       </button>
       <div
         id="warning"
-        class="hidden bg-amber-100 text-amber-600 font-semibold border-amber-500 border-2 rounded-lg py-1 px-2"
+        class="hidden bg-amber-100 text-amber-600 font-semibold border-amber-500 border-2 rounded-lg py-2 px-4"
       ></div>
 
-      <hr />
-      <div id="lines-stats" class="hidden flex-col">
-        <div class="text-green-400">
-          <span id="lines-added" class="text-2xl semi-bold">12 </span>
-          <span class="text-lg font-light">&nbsp;line(s) added</span>
+      <div
+        id="lines-stats"
+        class="flex-col text-2xl bg-slate-50 border-slate-400 border-2 rounded-xl px-4 py-2 tracking-wider hidden my-2"
+      >
+        <div class="text-gray-900 font-semibold">
+          <span id="lines-added" class="text-emerald-600">12 </span>
+          <span class="text-lg font-normal">&nbsp;line(s) added</span>
         </div>
-        <div class="text-blue-600">
-          <span id="lines-modified" class="text-2xl semi-bold">12 </span>
-          <span class="text-lg font-light">&nbsp;line(s) modified</span>
+        <div class="text-gray-900 font-semibold">
+          <span id="lines-modified" class="text-red-600">12 </span>
+          <span class="text-lg font-normal">&nbsp;line(s) modified</span>
         </div>
-        <div class="text-red-600">
-          <span id="lines-removed" class="text-2xl semi-bold">12 </span>
-          <span class="text-lg font-light">&nbsp;line(s) removed</span>
+        <div class="text-gray-900 font-semibold">
+          <span id="lines-removed" class="text-blue-700">12 </span>
+          <span class="text-lg font-normal">&nbsp;line(s) removed</span>
         </div>
       </div>
     </div>
