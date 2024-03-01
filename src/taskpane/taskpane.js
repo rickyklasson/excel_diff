@@ -1,4 +1,5 @@
 import { DiffHandler } from '../modules/diff.js';
+import { estComputationTime } from '../modules/utils.js';
 
 class ExcelHandler {
   static async getSheetValues(userConfig) {
@@ -115,6 +116,9 @@ class UIHandler {
     // Dropdown selectors.
     this.selector1 = document.getElementById('select-1');
     this.selector2 = document.getElementById('select-2');
+    this.updateEstComuptationTime = this.updateEstComuptationTime.bind(this);
+    this.selector1.addEventListener('change', this.updateEstComuptationTime);
+    this.selector2.addEventListener('change', this.updateEstComuptationTime);
     this.sheetNames = [];
 
     // Checkboxes.
@@ -133,6 +137,9 @@ class UIHandler {
 
     // Warning field
     this.warning = document.getElementById('warning');
+
+    // Info field
+    this.estComputationTime = document.getElementById('info-time');
   }
 
   getUserConfig() {
@@ -157,6 +164,7 @@ class UIHandler {
 
   setUIIdle() {
     document.getElementById('run-diff').disabled = false;
+    this.estComputationTime.style.display = 'none';
   }
 
   setUIStats(stats) {
@@ -170,8 +178,37 @@ class UIHandler {
   }
 
   setUIWarning(msg) {
-    this.warning.innerHTML = msg;
+    this.warning.innerText = msg;
     this.warning.style.display = 'flex';
+  }
+
+  updateEstComuptationTime() {
+    console.log('updateEstComuptationTime()');
+    Excel.run(async (context) => {
+      let selSheet1 = context.workbook.worksheets.getItem(this.selector1.value);
+      let selSheet2 = context.workbook.worksheets.getItem(this.selector2.value);
+
+      // Get list of values from the used ranges in sheet.
+      let range1 = selSheet1.getUsedRange();
+      let range2 = selSheet2.getUsedRange();
+      range1.load('columnCount');
+      range1.load('rowCount');
+      range2.load('columnCount');
+      range2.load('rowCount');
+      await context.sync();
+
+      let est = estComputationTime(
+        range1.columnCount,
+        range1.rowCount,
+        range2.columnCount,
+        range2.rowCount
+      );
+
+      let infoStr = `Estimated computation time: ~${est}s`;
+      console.log(`Updating info-time: ${infoStr}`);
+      this.estComputationTime.style.display = 'block';
+      this.estComputationTime.innerText = infoStr;
+    });
   }
 
   updateSheetLists() {
