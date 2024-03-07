@@ -25,7 +25,7 @@
   <body class="ms-font-m ms-Fabric bg-white">
     <div class="max-w-sm flex flex-col mx-auto py-6 gap-2 px-6">
       <!-- Selection for sheet 1 -->
-      <h4 class="font-light text-3xl mb-2 text-emerald-800 tracking-wide">Diff Configuration</h4>
+      <h4 class="font-semibold text-2xl mb-2 text-emerald-800 tracking-wide">Diff Configuration</h4>
       <select title="select-1" name="select-1" id="select-1"></select>
       <!-- Selection for sheet 2 -->
       <select title="select-2" name="select-2" id="select-2"></select>
@@ -61,10 +61,6 @@
         id="info-time"
         class="hidden bg-gray-50 text-gray-600 border-2 font-semibold border-gray-300 rounded-lg py-2 px-4"
       ></div>
-      <div
-        id="warning"
-        class="hidden bg-amber-100 text-amber-600 font-semibold border-amber-500 border-2 rounded-lg py-2 px-4"
-      ></div>
 
       <div
         id="lines-stats"
@@ -82,6 +78,21 @@
           <span id="lines-removed" class="text-red-700">---</span>
           <span class="text-lg font-normal">&nbsp;line(s) removed</span>
         </div>
+      </div>
+
+      <div
+        id="warning"
+        class="hidden bg-amber-100 text-amber-600 font-semibold border-amber-500 border-2 rounded-lg py-2 px-4"
+      ></div>
+
+      <div id="debug-div">
+        <button
+          id="generate-dummy"
+          type="button"
+          class="bg-red-600 font-light text-white py-2 px-4 rounded-lg"
+        >
+          Generate dummy sheets
+        </button>
       </div>
     </div>
   </body>

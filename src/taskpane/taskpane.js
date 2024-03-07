@@ -198,10 +198,8 @@ class UIHandler {
       await context.sync();
 
       let est = estComputationTime(
-        range1.columnCount,
-        range1.rowCount,
-        range2.columnCount,
-        range2.rowCount
+        Math.max(range1.columnCount, range2.columnCount),
+        Math.max(range1.rowCount, range2.rowCount)
       );
 
       let infoStr = `Estimated computation time: ~${est}s`;
