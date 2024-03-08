@@ -139,7 +139,8 @@ class UIHandler {
     this.warning = document.getElementById('warning');
 
     // Info field
-    this.estComputationTime = document.getElementById('info-time');
+    this.estComputationTimeDiv = document.getElementById('info-div');
+    this.estComputationTimeText = document.getElementById('info-text');
   }
 
   getUserConfig() {
@@ -164,7 +165,7 @@ class UIHandler {
 
   setUIIdle() {
     document.getElementById('run-diff').disabled = false;
-    this.estComputationTime.style.display = 'none';
+    this.estComputationTimeDiv.style.display = 'none';
   }
 
   setUIStats(stats) {
@@ -204,8 +205,8 @@ class UIHandler {
 
       let infoStr = `Estimated computation time: ~${est}s`;
       console.log(`Updating info-time: ${infoStr}`);
-      this.estComputationTime.style.display = 'block';
-      this.estComputationTime.innerText = infoStr;
+      this.estComputationTimeDiv.style.display = 'flex';
+      this.estComputationTimeText.innerText = infoStr;
     });
   }
 
