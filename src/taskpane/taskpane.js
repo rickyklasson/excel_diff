@@ -1,11 +1,106 @@
 import { DiffHandler } from '../modules/diff.js';
 import { estComputationTime } from '../modules/utils.js';
 
+const ColorSchemeDefault = {
+  UNCHANGED: {
+    fill: {
+      color: '#ffffff',
+    },
+    font: {
+      color: '#000000',
+      strikethrough: false,
+    },
+  },
+  ADDITION: {
+    fill: {
+      color: '#daf5d4',
+    },
+    font: {
+      color: '#053d0c',
+      strikethrough: false,
+    },
+  },
+  REMOVAL: {
+    fill: {
+      color: '#ebcacb',
+    },
+    font: {
+      color: '#93141a',
+      strikethrough: true,
+    },
+  },
+  MODIFICATION: {
+    fill: {
+      color: '#eaeef6',
+    },
+    font: {
+      color: '#000000',
+      strikethrough: false,
+    },
+  },
+  MODIFICATION_INTRA: {
+    fill: {
+      color: '#c3cce3',
+    },
+    font: {
+      color: '#142093',
+      strikethrough: false,
+    },
+  },
+};
+
+const ColorSchemeColorblind = {
+  UNCHANGED: {
+    fill: {
+      color: '#ffffff',
+    },
+    font: {
+      color: '#000000',
+      strikethrough: false,
+    },
+  },
+  ADDITION: {
+    fill: {
+      color: '#9df0ff',
+    },
+    font: {
+      color: '#13282b',
+      strikethrough: false,
+    },
+  },
+  REMOVAL: {
+    fill: {
+      color: '#ff8db5',
+    },
+    font: {
+      color: '#61102d',
+      strikethrough: true,
+    },
+  },
+  MODIFICATION: {
+    fill: {
+      color: '#ffefa8',
+    },
+    font: {
+      color: '#000000',
+      strikethrough: false,
+    },
+  },
+  MODIFICATION_INTRA: {
+    fill: {
+      color: '#ffbc6a',
+    },
+    font: {
+      color: '#100c07',
+      strikethrough: false,
+    },
+  },
+};
+
 class ExcelHandler {
   static async getSheetValues(userConfig) {
     console.log('getSheetValues()');
     return await Excel.run(async (context) => {
-      console.log('getSheetValues() async');
       // Get references to the compared sheets.
       let wbSheet1 = context.workbook.worksheets.getItem(userConfig.sheet1Name);
       let wbSheet2 = context.workbook.worksheets.getItem(userConfig.sheet2Name);
@@ -35,8 +130,7 @@ class ExcelHandler {
     return await Excel.run(async (context) => {
       // NOTE: Max worksheet name length is 31 chars
       let sheetId = 0;
-      let resultSheetNameBase =
-        userConfig.sheet1Name.substring(0, 9) + '->' + userConfig.sheet2Name.substring(0, 9);
+      let resultSheetNameBase = userConfig.sheet1Name.substring(0, 9) + '->' + userConfig.sheet2Name.substring(0, 9);
       let resultSheetName = resultSheetNameBase.concat(` (${sheetId})`);
       while (existingSheetNames.includes(resultSheetName)) {
         // Ensure unique sheet name.
@@ -69,11 +163,12 @@ class ExcelHandler {
     console.timeEnd('ExcelHandler.diffValuesToSheet');
   }
 
-  static async diffFormatToSheet(diffHandler, sheetName) {
+  static async diffFormatToSheet(diffHandler, sheetName, userConfig) {
     console.log(`diffFormatToSheet() -> Applying ${diffHandler.rangeFormats.length} formats`);
     console.time('ExcelHandler.diffFormatToSheet');
     await Excel.run(async (context) => {
       let resultSheet = context.workbook.worksheets.getItem(sheetName);
+      let colorScheme = userConfig['colorblind'] || false ? ColorSchemeColorblind : ColorSchemeDefault;
       // Write range formats to cells.
       for (let i = 0; i < diffHandler.rangeFormats.length; i++) {
         let rangeFormat = diffHandler.rangeFormats[i];
@@ -84,9 +179,9 @@ class ExcelHandler {
           rangeFormat.colCount
         );
 
-        rangeToFormat.format.fill.color = rangeFormat.format.fill.color;
-        rangeToFormat.format.font.color = rangeFormat.format.font.color;
-        rangeToFormat.format.font.strikethrough = rangeFormat.format.font.strikethrough;
+        rangeToFormat.format.fill.color = colorScheme[rangeFormat.diffType].fill.color;
+        rangeToFormat.format.font.color = colorScheme[rangeFormat.diffType].font.color;
+        rangeToFormat.format.font.strikethrough = colorScheme[rangeFormat.diffType].font.strikethrough;
       }
 
       await context.sync();
@@ -302,7 +397,6 @@ class App {
 
         // Perform the diff algorithm to get a list of Diffs.
         let diffHandler = new DiffHandler(sheet1Values, sheet2Values, userConfig);
-
         diffHandler.compute();
 
         this.UIHandler.setUIStats(diffHandler.stats);
@@ -311,7 +405,7 @@ class App {
         let diffSheetName = await ExcelHandler.createSheet(userConfig, this.UIHandler.sheetNames);
 
         await ExcelHandler.diffValuesToSheet(diffHandler, diffSheetName);
-        await ExcelHandler.diffFormatToSheet(diffHandler, diffSheetName);
+        await ExcelHandler.diffFormatToSheet(diffHandler, diffSheetName, userConfig);
         await ExcelHandler.collapseRows(diffHandler, diffSheetName);
 
         await context.sync();
@@ -323,6 +417,76 @@ class App {
     });
     console.timeEnd('runDiff');
   }
+}
+
+async function generateDummy() {
+  console.log('generateDummy()');
+
+  let NR_COLS = 5;
+  let NR_ROWS = 500;
+
+  const DUMMY1_NAME = `Dummy ${Math.floor(Math.random() * 9999).toString()}`;
+  const DUMMY2_NAME = `Dummy ${Math.floor(Math.random() * 9999).toString()}`;
+
+  await Excel.run(async (context) => {
+    let valueMatrix1 = [];
+    let valueMatrix2 = [];
+
+    for (let rowIdx = 0; rowIdx < NR_ROWS; rowIdx++) {
+      let valueRow1 = [];
+      let valueRow2 = [];
+      for (let colIdx = 0; colIdx < NR_COLS; colIdx++) {
+        let val = Math.random() * 1e10;
+        valueRow1.push(val.toString(36));
+
+        if (Math.random() < 0.05) {
+          // Modify values for sheet2 by random chance.
+          valueRow2.push((val * 41).toString(36));
+        } else {
+          // Normal case
+          valueRow2.push(val.toString(36));
+        }
+      }
+      valueMatrix1.push(valueRow1);
+
+      // Remove or duplicate valueRow for 2nd sheet by random chance.
+      if (Math.random() < 0.03) {
+        // Duplicate
+        valueMatrix2.push(valueRow2);
+        valueMatrix2.push(valueRow2);
+      } else if (Math.random() < 0.98) {
+        // Normal case
+        valueMatrix2.push(valueRow2);
+      } // else {..no row added..}
+    }
+
+    try {
+      context.workbook.worksheets.add(DUMMY1_NAME);
+      context.workbook.worksheets.add(DUMMY2_NAME);
+      await context.sync();
+    } catch (err) {
+      console.log('Dummy worksheets already exist...');
+    }
+
+    let dummy1Sheet = context.workbook.worksheets.getItem(DUMMY1_NAME);
+    let dummy2Sheet = context.workbook.worksheets.getItem(DUMMY2_NAME);
+
+    let range1 = dummy1Sheet.getRangeByIndexes(0, 0, valueMatrix1.length, valueMatrix1[0].length);
+    let range2 = dummy2Sheet.getRangeByIndexes(0, 0, valueMatrix2.length, valueMatrix2[0].length);
+
+    console.log(valueMatrix1.length, valueMatrix1[0].length, valueMatrix2.length, valueMatrix2[0].length);
+
+    range1.load(['values']);
+    range2.load(['values']);
+    await context.sync();
+
+    // Write values to sheets.
+    range1.values = valueMatrix1;
+    range2.values = valueMatrix2;
+    range1.format.autofitColumns();
+    range2.format.autofitColumns();
+    await context.sync();
+  });
 }
 
 Office.onReady(() => {
