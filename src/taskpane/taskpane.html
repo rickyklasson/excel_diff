@@ -7,10 +7,7 @@
     <title>Excel Diff Add-in</title>
 
     <!-- Office JavaScript API -->
-    <script
-      type="text/javascript"
-      src="https://appsforoffice.microsoft.com/lib/1.1/hosted/office.js"
-    ></script>
+    <script type="text/javascript" src="https://appsforoffice.microsoft.com/lib/1.1/hosted/office.js"></script>
 
     <!-- For more information on Fluent UI, visit https://developer.microsoft.com/fluentui#/. -->
     <link
@@ -31,21 +28,11 @@
       <select title="select-2" name="select-2" id="select-2"></select>
       <div>
         <div>
-          <input
-            type="checkbox"
-            id="diff-colorblind"
-            name="diff-colorblind"
-            class="accent-emerald-600"
-          />
+          <input type="checkbox" id="diff-colorblind" name="diff-colorblind" class="accent-emerald-600" />
           <label for="diff-colorblind" class="px-1">Colorblind mode</label>
         </div>
         <div>
-          <input
-            type="checkbox"
-            id="diff-collapse"
-            name="diff-collapse"
-            class="accent-emerald-600"
-          />
+          <input type="checkbox" id="diff-collapse" name="diff-collapse" class="accent-emerald-600" />
           <label for="diff-collapse" class="px-1">Collapse unchanged rows</label>
         </div>
       </div>
@@ -71,10 +58,9 @@
             id="info-tooltip"
             class="hidden group-hover:block absolute min-w-[300px] right-0 bg-slate-200 border-slate-500 border-2 text-md text-slate-800 font-semibold rounded-lg p-4 shadow-slate-300 shadow-lg"
           >
-            This tool is most suitable for comparing sheets with equal number of columns. The
-            estimated computation time is based on typical differences between sheets. Comparing
-            sheets that are almost equal is very fast and comparing sheets with vast differences is
-            slower.
+            This tool is most suitable for comparing sheets with equal number of columns. The estimated computation time
+            is based on typical differences between sheets. Comparing sheets that are almost equal is very fast and
+            comparing sheets with vast differences is slower.
           </div>
         </div>
       </div>
@@ -101,16 +87,6 @@
         id="warning"
         class="hidden bg-amber-100 text-amber-600 font-semibold border-amber-500 border-2 rounded-lg py-2 px-4"
       ></div>
-
-      <div id="debug-div">
-        <button
-          id="generate-dummy"
-          type="button"
-          class="bg-red-600 font-light text-white py-2 px-4 rounded-lg"
-        >
-          Generate dummy sheets
-        </button>
-      </div>
     </div>
   </body>
 </html>
