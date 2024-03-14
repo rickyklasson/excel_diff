@@ -28,7 +28,22 @@ class Diff {
 
   calculateSubDiff() {
     if (this.type == DiffType.MODIFICATION) {
-      this.subDiffs = diff1D(this.before, this.after);
+      this.subDiffs = [];
+
+      // Compute subDiffs as the direct difference between the 'after' and the 'before' values.
+      for (let i = 0; i < this.after.length; i++) {
+        let before = null;
+        if (i < this.before.length) {
+          // Normal case: Both 'before' and 'after' have elements to compare.
+          before = this.before[i];
+        }
+
+        let diffType = DiffType.UNCHANGED;
+        if (this.after[i] != before) {
+          diffType = DiffType.MODIFICATION_INTRA;
+        }
+        this.subDiffs.push(new Diff(diffType, before, this.after[i]));
+      }
     }
   }
 }
@@ -494,7 +509,6 @@ function diff2D(list1, list2) {
 
   for (let d of diffs) {
     d.calculateSubDiff();
-    d.subDiffs = cleanDiffList(d.subDiffs, true);
   }
 
   return diffs;
