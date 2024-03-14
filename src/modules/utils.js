@@ -53,9 +53,9 @@ function estComputationTime(colCount, rowCount) {
   const BASELINE_TIME = 1250; // [ms]
 
   const ROW_COUNTS = [100, 500, 1000, 2000, 5000, 10000, 25000];
-  const ROW_FACTORS = [0.2, 0.5, 1, 1.7, 5, 12, 50];
+  const ROW_FACTORS = [0.2, 0.5, 1, 1.7, 5, 12, 60];
   const COL_COUNTS = [1, 5, 10, 25, 50, 100, 200];
-  const COL_FACTORS = [0.2, 0.3, 0.55, 1, 2.5, 7, 12];
+  const COL_FACTORS = [0.2, 0.3, 0.5, 0.8, 1.8, 3.0, 5.0];
 
   let rowFactor = interp(ROW_COUNTS, ROW_FACTORS, rowCount);
   let colFactor = interp(COL_COUNTS, COL_FACTORS, colCount);

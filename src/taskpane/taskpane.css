@@ -1348,6 +1348,24 @@ select > option:focus {
   box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
 }
 
+.shadow-\[0_0_0_0_\#1e293b44\] {
+  --tw-shadow: 0 0 0 0 #1e293b44;
+  --tw-shadow-colored: 0 0 0 0 var(--tw-shadow-color);
+  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
+}
+
+.shadow-\[0_0_0_20_\#1e293b44\] {
+  --tw-shadow: 0 0 0 20 #1e293b44;
+  --tw-shadow-colored: 0 0 0 20 var(--tw-shadow-color);
+  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
+}
+
+.shadow-2xl {
+  --tw-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+  --tw-shadow-colored: 0 25px 50px -12px var(--tw-shadow-color);
+  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
+}
+
 .shadow-slate-700 {
   --tw-shadow-color: #334155;
   --tw-shadow: var(--tw-shadow-colored);
@@ -1360,6 +1378,41 @@ select > option:focus {
 
 .shadow-slate-300 {
   --tw-shadow-color: #cbd5e1;
+  --tw-shadow: var(--tw-shadow-colored);
+}
+
+.shadow-slate-800 {
+  --tw-shadow-color: #1e293b;
+  --tw-shadow: var(--tw-shadow-colored);
+}
+
+.shadow-\[\#000000\] {
+  --tw-shadow-color: #000000;
+  --tw-shadow: var(--tw-shadow-colored);
+}
+
+.shadow-\[\#00000000\] {
+  --tw-shadow-color: #00000000;
+  --tw-shadow: var(--tw-shadow-colored);
+}
+
+.shadow-\[\#000000FF\] {
+  --tw-shadow-color: #000000FF;
+  --tw-shadow: var(--tw-shadow-colored);
+}
+
+.shadow-\[\#1e293b99\] {
+  --tw-shadow-color: #1e293b99;
+  --tw-shadow: var(--tw-shadow-colored);
+}
+
+.shadow-\[\#1e293b44\] {
+  --tw-shadow-color: #1e293b44;
+  --tw-shadow: var(--tw-shadow-colored);
+}
+
+.shadow-\[\#1e293b33\] {
+  --tw-shadow-color: #1e293b33;
   --tw-shadow: var(--tw-shadow-colored);
 }
 
