@@ -13,25 +13,25 @@ const ColorSchemeDefault = {
   },
   ADDITION: {
     fill: {
-      color: '#daf5d4',
+      color: '#d1f5c9',
     },
     font: {
-      color: '#053d0c',
+      color: '#000000',
       strikethrough: false,
     },
   },
   REMOVAL: {
     fill: {
-      color: '#ebcacb',
+      color: '#ebb5b7',
     },
     font: {
-      color: '#93141a',
+      color: '#000000',
       strikethrough: true,
     },
   },
   MODIFICATION: {
     fill: {
-      color: '#eaeef6',
+      color: '#e1e8f6',
     },
     font: {
       color: '#000000',
@@ -40,10 +40,10 @@ const ColorSchemeDefault = {
   },
   MODIFICATION_INTRA: {
     fill: {
-      color: '#c3cce3',
+      color: '#acbce3',
     },
     font: {
-      color: '#142093',
+      color: '#000000',
       strikethrough: false,
     },
   },
@@ -79,7 +79,7 @@ const ColorSchemeColorblind = {
   },
   MODIFICATION: {
     fill: {
-      color: '#ffefa8',
+      color: '#ffe04f',
     },
     font: {
       color: '#000000',
@@ -88,7 +88,7 @@ const ColorSchemeColorblind = {
   },
   MODIFICATION_INTRA: {
     fill: {
-      color: '#ffbc6a',
+      color: '#e6af34',
     },
     font: {
       color: '#100c07',
@@ -146,7 +146,6 @@ class ExcelHandler {
 
   static async diffValuesToSheet(diffHandler, sheetName) {
     console.log(`diffValuesToSheet() -> Writing ${diffHandler.nrCols * diffHandler.nrRows} cells`);
-    console.time('ExcelHandler.diffValuesToSheet');
     await Excel.run(async (context) => {
       let resultSheet = context.workbook.worksheets.getItem(sheetName);
       let range = resultSheet.getRangeByIndexes(0, 0, diffHandler.nrRows, diffHandler.nrCols);
@@ -160,12 +159,10 @@ class ExcelHandler {
       range.format.autofitColumns();
       await context.sync();
     });
-    console.timeEnd('ExcelHandler.diffValuesToSheet');
   }
 
   static async diffFormatToSheet(diffHandler, sheetName, userConfig) {
     console.log(`diffFormatToSheet() -> Applying ${diffHandler.rangeFormats.length} formats`);
-    console.time('ExcelHandler.diffFormatToSheet');
     await Excel.run(async (context) => {
       let resultSheet = context.workbook.worksheets.getItem(sheetName);
       let colorScheme = userConfig['colorblind'] || false ? ColorSchemeColorblind : ColorSchemeDefault;
@@ -186,12 +183,10 @@ class ExcelHandler {
 
       await context.sync();
     });
-    console.timeEnd('ExcelHandler.diffFormatToSheet');
   }
 
   static async collapseRows(diffHandler, sheetName) {
     console.log(`collapseRows()`);
-    console.time('ExcelHandler.collapseRows');
     await Excel.run(async (context) => {
       let resultSheet = context.workbook.worksheets.getItem(sheetName);
       // Write range formats to cells.
@@ -202,7 +197,6 @@ class ExcelHandler {
       resultSheet.activate();
       await context.sync();
     });
-    console.timeEnd('ExcelHandler.collapseRows');
   }
 }
 
@@ -229,6 +223,9 @@ class UIHandler {
     this.linesAdded = document.getElementById('lines-added');
     this.linesModified = document.getElementById('lines-modified');
     this.linesRemoved = document.getElementById('lines-removed');
+    this.linesAddedColor = document.getElementById('lines-added-color');
+    this.linesModifiedColor = document.getElementById('lines-modified-color');
+    this.linesRemovedColor = document.getElementById('lines-removed-color');
 
     // Warning field
     this.warning = document.getElementById('warning');
@@ -263,7 +260,7 @@ class UIHandler {
     this.estComputationTimeDiv.style.display = 'none';
   }
 
-  setUIStats(stats) {
+  setUIStats(stats, userConfig) {
     console.log('stats:');
     console.log(stats);
 
@@ -271,6 +268,16 @@ class UIHandler {
     this.linesAdded.innerText = stats.added;
     this.linesModified.innerText = stats.modified;
     this.linesRemoved.innerText = stats.removed;
+
+    if (userConfig['colorblind']) {
+      this.linesAddedColor.style.backgroundColor = ColorSchemeColorblind.ADDITION.fill.color;
+      this.linesModifiedColor.style.backgroundColor = ColorSchemeColorblind.MODIFICATION_INTRA.fill.color;
+      this.linesRemovedColor.style.backgroundColor = ColorSchemeColorblind.REMOVAL.fill.color;
+    } else {
+      this.linesAddedColor.style.backgroundColor = ColorSchemeDefault.ADDITION.fill.color;
+      this.linesModifiedColor.style.backgroundColor = ColorSchemeDefault.MODIFICATION_INTRA.fill.color;
+      this.linesRemovedColor.style.backgroundColor = ColorSchemeDefault.REMOVAL.fill.color;
+    }
   }
 
   setUIWarning(msg) {
@@ -399,7 +406,7 @@ class App {
         let diffHandler = new DiffHandler(sheet1Values, sheet2Values, userConfig);
         diffHandler.compute();
 
-        this.UIHandler.setUIStats(diffHandler.stats);
+        this.UIHandler.setUIStats(diffHandler.stats, userConfig);
 
         // Create sheet for diffs and write diff values and format to sheet.
         let diffSheetName = await ExcelHandler.createSheet(userConfig, this.UIHandler.sheetNames);

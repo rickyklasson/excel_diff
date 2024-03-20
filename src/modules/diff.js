@@ -95,8 +95,6 @@ class DiffHandler {
   }
 
   compute() {
-    console.time('DiffHandler.compute');
-
     this.diffs = diff2D(this.list1, this.list2);
     this.nrRows = this.diffs.length;
     this.nrCols = this.calcNrCols();
@@ -104,8 +102,6 @@ class DiffHandler {
     this.diffValues = this.computeDiffValues();
     this.stats = this.computeStats();
     this.rangeFormats = this.computeRangeFormats();
-
-    console.timeEnd('DiffHandler.compute');
   }
 
   calcNrCols() {
@@ -124,8 +120,9 @@ class DiffHandler {
   }
 
   computeCollapsibleRows() {
-    const MINCOLLAPSEROWS = 10;
-    const COLLAPSEMARGIN = 2;
+    const MINCOLLAPSEROWS = 5;
+    const COLLAPSEMARGIN = 1;
+
     let collapsibleRowRanges = [];
     let collapseStart = 1;
     let collapseEnd = null;
